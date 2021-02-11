@@ -1,14 +1,12 @@
 {
   "name": "GoogleStorage",
-
-  "namespace":"Stanford\\GoogleStorage",
-
+  "namespace": "Stanford\\GoogleStorage",
   "description": "Allow file storage from REDCap projects to Google Cloud",
-
   "versions": [
-    { "0.1": "Initial" }
+    {
+      "0.1": "Initial"
+    }
   ],
-
   "authors": [
     {
       "name": "Andrew Martin",
@@ -19,12 +17,15 @@
       "name": "Lee Ann Yasukawa",
       "email": "yasukawa@stanfordhealthcare.org",
       "institution": "Stanford Health Care"
+    },
+    {
+      "name": "Ihab Zeedia",
+      "email": "izeedia@stanfordhealthcare.org",
+      "institution": "Stanford Health Care"
     }
   ],
-
   "permissions": [
   ],
-
   "links": {
     "control-center": [
     ],
@@ -38,35 +39,53 @@
         "name": "Google Token Retriever",
         "icon": "gear",
         "url": "src/RetrieveTokenAndUrl.php"
+      },
+      {
+        "name": "Google Test",
+        "icon": "gear",
+        "url": "src/test.php"
       }
     ]
   },
-
   "no-auth-pages": [
+    "src/test"
   ],
-
   "system-settings": [
     {
       "key": "enable-system-debug-logging",
       "name": "<b>Enable Debug Logging</b><br>If you have the Stanford emLogger external module installed and configured, you can enable additional debug-level logging through this checkbox</b>",
       "required": false,
       "type": "checkbox"
+    }
+  ],
+  "project-settings": [
+    {
+      "key": "google-project-id",
+      "name": "<h3>Google Storage Project ID</h3>",
+      "required": true,
+      "type": "text"
     },
     {
       "key": "google-api-token",
       "name": "<h3>Google Storage API Token</h3>",
       "required": true,
-      "type": "text"
+      "type": "textarea"
     },
     {
-      "key": "google-api-url",
-      "name": "<h3>Google Storage API URL</h3>",
+      "key": "instance",
+      "name": "<b>Google Bucket Storage Instances</b>",
       "required": true,
-      "type": "text"
-    }
-  ],
-
-  "project-settings": [
+      "type": "sub_settings",
+      "repeatable": true,
+      "sub_settings": [
+        {
+          "key": "google-storage-bucket",
+          "name": "<h3>Google Storage Bucket that will be used to save data</h3>",
+          "required": true,
+          "type": "text"
+        }
+      ]
+    },
     {
       "key": "enable-project-debug-logging",
       "name": "<b>Enable Debug Logging</b>",
