@@ -103,6 +103,43 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
         $this->setFields($fields);
     }
 
+    public function getFieldInstrument($field)
+    {
+        foreach ($this->getProject()->forms as $name => $form) {
+            if (array_key_exists($field, $form['fields'])) {
+                return $name;
+            }
+        }
+    }
+
+
+    public function saveRecord()
+    {
+        $data[\REDCap::getRecordIdField()] = filter_var($_POST['record_id'], FILTER_SANITIZE_STRING);
+        $filesPath = json_decode($_POST['files_path'], true);
+        foreach ($filesPath as $field => $item) {
+            $data[$field] = $item;
+            $form = $this->getFieldInstrument($field);
+        }
+        $eventId = filter_var($_POST['event_id'], FILTER_SANITIZE_NUMBER_INT);
+        $data['redcap_event_name'] = $this->getProject()->getUniqueEventNames($eventId);
+        if ($this->getProject()->isRepeatingForm($eventId, $form)) {
+            $data['redcap_repeat_instance'] = filter_var($_POST['instance_id'], FILTER_SANITIZE_NUMBER_INT);
+            $data['redcap_repeat_instrument'] = $form;
+        }
+
+        $response = \REDCap::saveData($this->getProjectId(), 'json', json_encode(array($data)));
+        if (empty($response['errors'])) {
+            return array('status' => 'success');
+        } else {
+            if (is_array($response['errors'])) {
+                throw new \Exception(implode(",", $response['errors']));
+            } else {
+                throw new \Exception($response['errors']);
+            }
+        }
+    }
+
     public function redcap_every_page_top()
     {
         // in case we are loading record homepage load its the record children if existed

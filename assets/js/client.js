@@ -2,22 +2,31 @@ Client = {
     signedURL: '',
     contentType: '',
     getSignedURLAjax: '',
+    saveRecordURLAjax: '',
     recordId: '',
     eventId: '',
     instanceId: '',
     form: [],
     fields: [],
-    filesPath: '',
+    filesPath: {},
     init: function () {
+
+        // when ajax is completed then save the record.
+        // jQuery(document).on({
+        //     ajaxStop: function () {
+        //
+        //     }
+        // });
+
         Client.processFields();
         $(".google-storage-field").on('change', function () {
             var files = $(this).prop("files")
             var field = $(this).data('field')
-
+            Client.form = $(this).parents('form:first');
             for (var i = 0; i < files.length; i++) {
                 Client.getSignedURL(files[i].type, files[i].name, field, files[i])
             }
-            console.log(files)
+
             //Client.getSignedURL(file[0].type, file[0].name, field)
         });
 
@@ -30,10 +39,31 @@ Client = {
         //     Client.uploadFile(form)
         // })
     },
+    saveRecord: function () {
+        $.ajax({
+            // Your server script to process the upload
+            url: Client.saveRecordURLAjax,
+            type: 'POST',
+
+            // Form data
+            data: {
+                'record_id': Client.recordId,
+                'event_id': Client.eventId,
+                'instance_id': Client.instanceId,
+                'files_path': JSON.stringify(Client.filesPath)
+            },
+            success: function (data) {
+                var response = JSON.parse(data)
+                if (response.status === 'success') {
+                    Client.uploadFile(response.url, type, file, response.path)
+                }
+            }
+        });
+    },
     processFields: function () {
         for (var prop in Client.fields) {
             $elem = jQuery("input[name=" + prop + "]").attr('type', 'hidden').addClass('google-storage')
-            $('<form class="google-storage-form" enctype="multipart/form-data"><input multiple class="google-storage-field" name="file" data-field="' + prop + '" type="file"/></form><progress></progress>').insertAfter($elem)
+            $('<form class="google-storage-form" enctype="multipart/form-data"><input multiple class="google-storage-field" name="file" data-field="' + prop + '" type="file"/></form>').insertAfter($elem)
         }
     },
     getSignedURL: function (type, name, field, file) {
@@ -54,12 +84,12 @@ Client = {
             success: function (data) {
                 var response = JSON.parse(data)
                 if (response.status === 'success') {
-                    Client.uploadFile(response.url, type, file, response.path)
+                    Client.uploadFile(response.url, type, file, response.path, field)
                 }
             }
         });
     },
-    uploadFile: function (url, type, file, path) {
+    uploadFile: function (url, type, file, path, field) {
         var data = new FormData();
         data.append('file', file)
         $.ajax({
@@ -79,8 +109,16 @@ Client = {
                 "Access-Control-Allow-Origin": "*",
                 "Content-Type": type,
             },
+            beforeSend: function () {
+                $('<progress data-name="' + file.name + '"></progress>' + file.name + '<br>').insertAfter(Client.form);
+            },
             complete: function () {
-                Client.filesPath += filesPath
+                if (Client.filesPath[field] === undefined) {
+                    Client.filesPath[field] = path
+                } else {
+                    Client.filesPath[field] += ', ' + path
+                }
+                Client.saveRecord();
             },
             // Custom XMLHttpRequest
             xhr: function () {
@@ -89,7 +127,7 @@ Client = {
                     // For handling the progress of the upload
                     myXhr.upload.addEventListener('progress', function (e) {
                         if (e.lengthComputable) {
-                            $('progress').attr({
+                            $('progress[data-name="' + file.name + '"]').attr({
                                 value: e.loaded,
                                 max: e.total,
                             });
