@@ -2,18 +2,6 @@
 namespace Stanford\GoogleStorage;
 /** @var \Stanford\GoogleStorage\GoogleStorage $module */
 
-try {
-    $bucket = $module->getBucket('redcap-storage-test');
-    $response = $module->getGoogleStorageSignedUploadUrl($bucket, 'config.json');
-
-    print('Generated PUT signed URL:' . PHP_EOL);
-    print($response . PHP_EOL);
-    print('You can use this URL with any user agent, for example:' . PHP_EOL);
-    print("curl -X PUT -H 'Content-Type: application/octet-stream' " .
-        '--upload-file my-file ' . $response . PHP_EOL);
-} catch (\Exception $e) {
-    echo $e->getMessage();
-}
 ?>
 
 
@@ -33,18 +21,62 @@ try {
 <body>
 <h2>Google Storage Test</h2>
 <form id="test-form" enctype="multipart/form-data">
-    <input name="file" type="file"/>
+    <input id="file-type" name="file" type="file" multiple/>
     <input type="button" value="Upload"/>
 </form>
 <progress></progress>
 <script>
+    var signedURL = ''
+    var contentType = ''
+    $("#file-type").on('change', function () {
 
-    $(':button').on('click', function () {
-        var data = new FormData($('#test-form')[0]);
-        console.log(data)
         $.ajax({
             // Your server script to process the upload
-            url: "<?php echo $response ?>",
+            url: "<?php echo $module->getUrl('ajax/get_signed_url.php', false, true) ?>",
+            type: 'GET',
+
+            // Form data
+            data: {
+                'content_type': document.getElementById('file-type').files[0].type,
+                'file_name': document.getElementById('file-type').files[0].name,
+                'bucket_name': 'redcap-storage-test'
+            },
+            success: function (data) {
+                var response = JSON.parse(data)
+                if (response.status == 'success') {
+                    signedURL = response.url
+                    contentType = document.getElementById('file-type').files[0].type
+                    console.log(signedURL)
+                }
+            }
+        });
+    })
+    $(':button').on('click', function () {
+
+        if (signedURL == '') {
+            alert('Please make sure to select a file to upload');
+            return;
+        }
+        //var formData = new FormData($('#test-form')[0]);
+        //formData.append("file", document.getElementById("myFileField").files[0]);
+        //var url = "<?php //echo $response ?>//"
+        //var xhr = new XMLHttpRequest();
+        //xhr.open("PUT", url);
+        //
+        //xhr.setRequestHeader("Content-Type", "application/octet-stream");
+        //
+        //xhr.onreadystatechange = function () {
+        //    if (xhr.readyState === 4) {
+        //        console.log(xhr.status);
+        //        console.log(xhr.responseText);
+        //    }};
+        //
+        //xhr.send(formData);
+
+        var data = new FormData($('#test-form')[0]);
+        $.ajax({
+            // Your server script to process the upload
+            url: signedURL,
             type: 'PUT',
 
             // Form data
@@ -54,6 +86,15 @@ try {
             // You *must* include these options!
             processData: false,
             contentType: false,
+            cache: false,
+            "headers": {
+                "Access-Control-Allow-Origin": "*",
+                "Content-Type": contentType,
+            },
+            complete: function () {
+                signedURL = ''
+                contentType = ''
+            },
             // Custom XMLHttpRequest
             xhr: function () {
                 var myXhr = $.ajaxSettings.xhr();

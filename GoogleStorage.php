@@ -85,12 +85,12 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
      * @return string
      * @throws \Exception
      */
-    public function getGoogleStorageSignedUploadUrl($bucket, $objectName, $duration = 3600)
+    public function getGoogleStorageSignedUploadUrl($bucket, $objectName, $contentType = 'text/plain', $duration = 3600)
     {
         $url = $bucket->object($objectName)->signedUrl(new \DateTime('+ ' . $duration . ' seconds'),
             [
                 'method' => 'PUT',
-                'contentType' => 'application/octet-stream',
+                'contentType' => $contentType,
                 'version' => 'v4',
             ]);
         return $url;
