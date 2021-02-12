@@ -5,31 +5,38 @@ Client = {
     recordId: '',
     eventId: '',
     instanceId: '',
+    form: [],
     fields: [],
+    filesPath: '',
     init: function () {
         Client.processFields();
         $(".google-storage-field").on('change', function () {
-            var file = $(this).prop("files")
+            var files = $(this).prop("files")
             var field = $(this).data('field')
-            Client.getSignedURL(file[0].type, file[0].name, field)
+
+            for (var i = 0; i < files.length; i++) {
+                Client.getSignedURL(files[i].type, files[i].name, field, files[i])
+            }
+            console.log(files)
+            //Client.getSignedURL(file[0].type, file[0].name, field)
         });
 
-        $('.google-storage-upload').on('click', function () {
-            if (Client.signedURL === '') {
-                alert('Please make sure to select a file to upload');
-                return;
-            }
-            var form = $(this).parents('form:first');
-            Client.uploadFile(form)
-        })
+        // $('.google-storage-upload').on('click', function () {
+        //     if (Client.signedURL === '') {
+        //         alert('Please make sure to select a file to upload');
+        //         return;
+        //     }
+        //
+        //     Client.uploadFile(form)
+        // })
     },
     processFields: function () {
         for (var prop in Client.fields) {
             $elem = jQuery("input[name=" + prop + "]").attr('type', 'hidden').addClass('google-storage')
-            $('<form class="google-storage-form" enctype="multipart/form-data"><input class="google-storage-field" name="file" data-field="' + prop + '" type="file"/><input class="google-storage-upload" type="button" value="Upload"/></form><progress></progress>').insertAfter($elem)
+            $('<form class="google-storage-form" enctype="multipart/form-data"><input multiple class="google-storage-field" name="file" data-field="' + prop + '" type="file"/></form><progress></progress>').insertAfter($elem)
         }
     },
-    getSignedURL: function (type, name, field) {
+    getSignedURL: function (type, name, field, file) {
         $.ajax({
             // Your server script to process the upload
             url: Client.getSignedURLAjax,
@@ -47,18 +54,17 @@ Client = {
             success: function (data) {
                 var response = JSON.parse(data)
                 if (response.status === 'success') {
-                    Client.signedURL = response.url
-                    Client.contentType = type
-                    console.log(Client)
+                    Client.uploadFile(response.url, type, file, response.path)
                 }
             }
         });
     },
-    uploadFile: function (form) {
-        var data = new FormData(form[0]);
+    uploadFile: function (url, type, file, path) {
+        var data = new FormData();
+        data.append('file', file)
         $.ajax({
             // Your server script to process the upload
-            url: Client.signedURL,
+            url: url,
             type: 'PUT',
 
             // Form data
@@ -71,11 +77,10 @@ Client = {
             cache: false,
             "headers": {
                 "Access-Control-Allow-Origin": "*",
-                "Content-Type": Client.contentType,
+                "Content-Type": type,
             },
             complete: function () {
-                Client.signedURL = ''
-                Client.contentType = ''
+                Client.filesPath += filesPath
             },
             // Custom XMLHttpRequest
             xhr: function () {

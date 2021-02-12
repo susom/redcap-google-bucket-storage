@@ -129,7 +129,7 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
 
     public function buildUploadPath($fileName, $recordId, $eventId, $instanceId)
     {
-        return $recordId . '_' . $eventId . $instanceId ? ('_' . $instanceId . '/' . $fileName) : ('/' . $fileName);
+        return $recordId . '_' . $eventId . '_' . $instanceId . '/' . $fileName;
     }
 
     /**
