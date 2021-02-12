@@ -15,7 +15,11 @@ use Google\Cloud\Storage\Bucket;
  * @property \Google\Cloud\Storage\StorageClient $client
  * @property \Google\Cloud\Storage\Bucket[] $buckets
  * @property array $instances
- * test
+ * @property array $fields
+ * @property \Project $project
+ * @property string $recordId
+ * @property int $eventId
+ * @property int $instanceId
  */
 class GoogleStorage extends \ExternalModules\AbstractExternalModule
 {
@@ -38,6 +42,16 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
      */
     private $instances;
 
+    private $project;
+
+    private $fields;
+
+    private $recordId;
+
+    private $eventId;
+
+    private $instanceId;
+
     public function __construct()
     {
         try {
@@ -46,6 +60,11 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
             if (isset($_GET['pid']) && $this->getProjectSetting('google-api-token') != '' && $this->getProjectSetting('google-project-id') != '') {
                 $this->setInstances();
 
+                global $Proj;
+
+                $this->setProject($Proj);
+
+                $this->prepareGoogleStorageFields();
                 //configure google storage object
                 $this->setClient(new StorageClient(['keyFile' => json_decode($this->getProjectSetting('google-api-token'), true), 'projectId' => $this->getProjectSetting('google-project-id')]));
 
@@ -60,6 +79,57 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
         } catch (\Exception $e) {
             #echo $e->getMessage();
         }
+    }
+
+    /**
+     * @param string $path
+     */
+    public function includeFile($path)
+    {
+        include_once $path;
+    }
+
+    private function prepareGoogleStorageFields()
+    {
+        $fields = array();
+        $re = '/^@GOOGLE-STORAGE=/m';
+        foreach ($this->getProject()->metadata as $name => $field) {
+            preg_match_all($re, $field['misc'], $matches, PREG_SET_ORDER, 0);
+            if (!empty($matches)) {
+                $fields[$name] = str_replace('@GOOGLE-STORAGE=', '', $field['misc']);
+            }
+            unset($matches);
+        }
+        $this->setFields($fields);
+    }
+
+    public function redcap_every_page_top()
+    {
+        // in case we are loading record homepage load its the record children if existed
+        if (strpos($_SERVER['SCRIPT_NAME'], 'DataEntry/index.php') !== false && $this->getFields()) {
+
+            if (isset($_GET['id'])) {
+                $this->setRecordId(filter_var($_GET['id'], FILTER_SANITIZE_STRING));
+            }
+
+            if (isset($_GET['event_id'])) {
+                $this->setEventId(filter_var($_GET['event_id'], FILTER_SANITIZE_NUMBER_INT));
+            } else {
+                $this->setEventId($this->getFirstEventId());
+            }
+
+            if (isset($_GET['instance'])) {
+                $this->setInstanceId(filter_var($_GET['instance'], FILTER_SANITIZE_NUMBER_INT));
+            }
+
+            $this->includeFile("src/client.php");
+        }
+
+    }
+
+    public function buildUploadPath($fileName, $recordId, $eventId, $instanceId)
+    {
+        return $recordId . '_' . $eventId . $instanceId ? ('_' . $instanceId . '/' . $fileName) : ('/' . $fileName);
     }
 
     /**
@@ -113,11 +183,12 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
     }
 
     /**
-     * @param string $bucketName
+     * @param string $fieldName
      * @return \Google\Cloud\Storage\Bucket
      */
-    public function getBucket($bucketName)
+    public function getBucket($fieldName)
     {
+        $bucketName = $this->getFields()[$fieldName];
         return $this->getBuckets()[$bucketName];
     }
 
@@ -153,35 +224,85 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
         $this->instances = $this->getSubSettings('instance', $this->getProjectId());
     }
 
+    /**
+     * @return \Project
+     */
+    public function getProject()
+    {
+        return $this->project;
+    }
 
-    /******************************************************************************************************************/
-    /* HOOK METHODS                                                                                                   */
-    /******************************************************************************************************************/
+    /**
+     * @param \Project $project
+     */
+    public function setProject(\Project $project)
+    {
+        $this->project = $project;
+    }
 
-    /******************************************************************************************************************/
-    /* METHODS                                                                                                       */
-    /******************************************************************************************************************/
-    // Need to set environment variable
-    // GOOGLE_APPLICATION_CREDENTIALS="path/to/service-account/key.json for storage.create
+    /**
+     * @return array
+     */
+    public function getFields()
+    {
+        return $this->fields;
+    }
 
-    // contentType and objectPath values should be sent from front-end
-    /*
-    $contentType = "image/png";
-    $objectPath = "my-favorite-cat-photo.png";
+    /**
+     * @param array $fields
+     */
+    public function setFields(array $fields)
+    {
+        $this->fields = $fields;
+    }
 
-    $bucket = "my-cat-bucket";
-    $storage = StorageOptions.getDefaultInstance.getService;
-    $blob = storage.create(
-        BlobInfo.newBuilder(bucket, objectPath)
-        .setContentType(contentType)
-        .build()
-    );
+    /**
+     * @return string
+     */
+    public function getRecordId()
+    {
+        return $this->recordId;
+    }
 
-    // Create a signed URL valid for PUT'ing a file with Path <objectPath> and Content-Type "PUT". Valid for 1 day
-    $urlPut = storage.signUrl(blob, 1, TimeUnit.DAYS, SignUrlOption.httpMethod(HttpMethod.PUT), SignUrlOption.withContentType());
-*/
-    /******************************************************************************************************************/
-    /* CRON METHODS                                                                                                   */
-    /******************************************************************************************************************/
+    /**
+     * @param string $recordId
+     */
+    public function setRecordId($recordId)
+    {
+        $this->recordId = $recordId;
+    }
+
+    /**
+     * @return int
+     */
+    public function getEventId(): int
+    {
+        return $this->eventId;
+    }
+
+    /**
+     * @param int $eventId
+     */
+    public function setEventId(int $eventId): void
+    {
+        $this->eventId = $eventId;
+    }
+
+    /**
+     * @return int
+     */
+    public function getInstanceId()
+    {
+        return $this->instanceId;
+    }
+
+    /**
+     * @param int $instanceId
+     */
+    public function setInstanceId($instanceId)
+    {
+        $this->instanceId = $instanceId;
+    }
+
 
 }

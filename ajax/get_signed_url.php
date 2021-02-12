@@ -6,10 +6,14 @@ namespace Stanford\GoogleStorage;
 try {
     $contentType = filter_var($_GET['content_type'], FILTER_SANITIZE_STRING);
     $fileName = filter_var($_GET['file_name'], FILTER_SANITIZE_STRING);
-    $bucketName = filter_var($_GET['bucket_name'], FILTER_SANITIZE_STRING);
-    $bucket = $module->getBucket($bucketName);
-    $response = $module->getGoogleStorageSignedUploadUrl($bucket, $fileName, $contentType);
-    echo json_encode(array('status' => 'success', 'url' => $response));
+    $fieldName = filter_var($_GET['field_name'], FILTER_SANITIZE_STRING);
+    $recordId = filter_var($_GET['record_id'], FILTER_SANITIZE_STRING);
+    $eventId = filter_var($_GET['event_id'], FILTER_SANITIZE_NUMBER_INT);
+    $instanceId = filter_var($_GET['instance_id'], FILTER_SANITIZE_NUMBER_INT);
+    $bucket = $module->getBucket($fieldName);
+    $path = $module->buildUploadPath($fileName, $recordId, $eventId, $instanceId);
+    $response = $module->getGoogleStorageSignedUploadUrl($bucket, $path, $contentType);
+    echo json_encode(array('status' => 'success', 'url' => $response, 'path' => $path));
 } catch (\LogicException $e) {
     $module->emError($e->getMessage());
     http_response_code(404);

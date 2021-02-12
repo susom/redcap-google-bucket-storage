@@ -25,6 +25,7 @@
     }
   ],
   "permissions": [
+    "redcap_every_page_top"
   ],
   "links": {
     "control-center": [

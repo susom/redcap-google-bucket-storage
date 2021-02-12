@@ -2,40 +2,60 @@ Client = {
     signedURL: '',
     contentType: '',
     getSignedURLAjax: '',
+    recordId: '',
+    eventId: '',
+    instanceId: '',
+    fields: [],
     init: function () {
-        $(".google-storage").on('change', function () {
-            var file = $(this)
-            Client.getSignedURL(file.type, file.name)
+        Client.processFields();
+        $(".google-storage-field").on('change', function () {
+            var file = $(this).prop("files")
+            var field = $(this).data('field')
+            Client.getSignedURL(file[0].type, file[0].name, field)
         });
 
-        $(':button').on('click', function () {
-
+        $('.google-storage-upload').on('click', function () {
             if (Client.signedURL === '') {
                 alert('Please make sure to select a file to upload');
                 return;
             }
+            var form = $(this).parents('form:first');
+            Client.uploadFile(form)
         })
     },
-    getSignedURL: function (type, name, bucket) {
+    processFields: function () {
+        for (var prop in Client.fields) {
+            $elem = jQuery("input[name=" + prop + "]").attr('type', 'hidden').addClass('google-storage')
+            $('<form class="google-storage-form" enctype="multipart/form-data"><input class="google-storage-field" name="file" data-field="' + prop + '" type="file"/><input class="google-storage-upload" type="button" value="Upload"/></form><progress></progress>').insertAfter($elem)
+        }
+    },
+    getSignedURL: function (type, name, field) {
         $.ajax({
             // Your server script to process the upload
             url: Client.getSignedURLAjax,
             type: 'GET',
 
             // Form data
-            data: {'content_type': type, 'file_name': name, 'bucket_name': bucket},
+            data: {
+                'content_type': type,
+                'file_name': name,
+                'field_name': field,
+                'record_id': Client.recordId,
+                'event_id': Client.eventId,
+                'instance_id': Client.instanceId
+            },
             success: function (data) {
                 var response = JSON.parse(data)
                 if (response.status === 'success') {
-                    signedURL = response.url
-                    contentType = type
-                    console.log(signedURL)
+                    Client.signedURL = response.url
+                    Client.contentType = type
+                    console.log(Client)
                 }
             }
         });
     },
-    uploadFile: function () {
-        var data = new FormData($('#test-form')[0]);
+    uploadFile: function (form) {
+        var data = new FormData(form[0]);
         $.ajax({
             // Your server script to process the upload
             url: Client.signedURL,
