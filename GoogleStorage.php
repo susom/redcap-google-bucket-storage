@@ -121,22 +121,25 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
 
     public function saveRecord()
     {
-        $data[\REDCap::getRecordIdField()] = filter_var($_POST['record_id'], FILTER_SANITIZE_STRING);
+        $this->setRecordId(filter_var($_POST['record_id'], FILTER_SANITIZE_STRING));
+        $data[\REDCap::getRecordIdField()] = $this->getRecordId();
         $filesPath = json_decode($_POST['files_path'], true);
         foreach ($filesPath as $field => $item) {
             $data[$field] = $item;
             $form = $this->getFieldInstrument($field);
         }
-        $eventId = filter_var($_POST['event_id'], FILTER_SANITIZE_NUMBER_INT);
-        $data['redcap_event_name'] = $this->getProject()->getUniqueEventNames($eventId);
-        if ($this->getProject()->isRepeatingForm($eventId, $form)) {
+        $this->setEventId(filter_var($_POST['event_id'], FILTER_SANITIZE_NUMBER_INT));
+        $data['redcap_event_name'] = $this->getProject()->getUniqueEventNames($this->getEventId());
+        if ($this->getProject()->isRepeatingForm($this->getEventId(), $form)) {
             $data['redcap_repeat_instance'] = filter_var($_POST['instance_id'], FILTER_SANITIZE_NUMBER_INT);
             $data['redcap_repeat_instrument'] = $form;
         }
 
         $response = \REDCap::saveData($this->getProjectId(), 'json', json_encode(array($data)));
         if (empty($response['errors'])) {
-            return array('status' => 'success');
+            $this->setRecord();
+            $this->prepareDownloadLinks();
+            return array('status' => 'success', 'links' => $this->getDownloadLinks());
         } else {
             if (is_array($response['errors'])) {
                 throw new \Exception(implode(",", $response['errors']));

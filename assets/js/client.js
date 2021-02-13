@@ -56,18 +56,29 @@ Client = {
             success: function (data) {
                 var response = JSON.parse(data)
                 if (response.status === 'success') {
-                    Client.uploadFile(response.url, type, file, response.path)
+                    Client.downloadLinks = response.links
+                    Client.processFields()
                 }
             }
         });
     },
+    cleanFields: function () {
+        $(".google-storage-link").empty();
+        $(".google-storage-link").remove();
+        $(".google-storage-form").empty();
+        $(".google-storage-form").remove();
+        $("progress").empty();
+        $("progress").remove();
+    },
     processFields: function () {
+        Client.cleanFields()
         for (var prop in Client.fields) {
-            $elem = jQuery("input[name=" + prop + "]").attr('type', 'hidden').addClass('google-storage')
+            $elem = jQuery("input[name=" + prop + "]").attr('type', 'hidden').addClass('google-storage');
+
             if ($elem.val() !== '') {
                 var files = Client.downloadLinks[prop];
                 for (var file in files) {
-                    $('<a target="_blank" href="' + files[file] + '">' + file + '</a><br>').insertAfter($elem);
+                    $('<a class="google-storage-link" target="_blank" href="' + files[file] + '">' + file + '</a><br>').insertAfter($elem);
                 }
             }
             $('<form class="google-storage-form" enctype="multipart/form-data"><input multiple class="google-storage-field" name="file" data-field="' + prop + '" type="file"/></form>').insertAfter($elem)

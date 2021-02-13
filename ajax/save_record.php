@@ -4,7 +4,6 @@ namespace Stanford\GoogleStorage;
 /** @var \Stanford\GoogleStorage\GoogleStorage $module */
 
 try {
-    $module->saveRecord();
     echo json_encode($module->saveRecord());
 } catch (\LogicException $e) {
     $module->emError($e->getMessage());
