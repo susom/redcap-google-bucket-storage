@@ -16,6 +16,8 @@ use Google\Cloud\Storage\Bucket;
  * @property \Google\Cloud\Storage\Bucket[] $buckets
  * @property array $instances
  * @property array $fields
+ * @property array $record
+ * @property array $downloadLinks
  * @property \Project $project
  * @property string $recordId
  * @property int $eventId
@@ -51,6 +53,10 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
     private $eventId;
 
     private $instanceId;
+
+    private $record;
+
+    private $downloadLinks;
 
     public function __construct()
     {
@@ -145,6 +151,7 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
         // in case we are loading record homepage load its the record children if existed
         if (strpos($_SERVER['SCRIPT_NAME'], 'DataEntry/index.php') !== false && $this->getFields()) {
 
+
             if (isset($_GET['id'])) {
                 $this->setRecordId(filter_var($_GET['id'], FILTER_SANITIZE_STRING));
             }
@@ -158,10 +165,27 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
             if (isset($_GET['instance'])) {
                 $this->setInstanceId(filter_var($_GET['instance'], FILTER_SANITIZE_NUMBER_INT));
             }
-
+            $this->setRecord();
+            $this->prepareDownloadLinks();
             $this->includeFile("src/client.php");
         }
 
+    }
+
+    public function prepareDownloadLinks()
+    {
+        $record = $this->getRecord();
+        $links = array();
+        foreach ($this->getFields() as $field => $bucket) {
+            if ($record[$this->getRecordId()][$this->getEventId()][$field] != '') {
+                $files = explode(",", $record[$this->getRecordId()][$this->getEventId()][$field]);
+                $bucket = $this->getBucket($field);
+                foreach ($files as $file) {
+                    $links[$field][$file] = $this->getGoogleStorageSignedUrl($bucket, trim($file));
+                }
+            }
+        }
+        $this->setDownloadLinks($links);
     }
 
     public function buildUploadPath($fileName, $recordId, $eventId, $instanceId)
@@ -341,5 +365,43 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
         $this->instanceId = $instanceId;
     }
 
+    /**
+     * @return array
+     */
+    public function getRecord()
+    {
+        return $this->record;
+    }
 
+    /**
+     * @param array $record
+     */
+    public function setRecord()
+    {
+        $param = array(
+            'project_id' => $this->getProjectId(),
+            'return_format' => 'array',
+            'events' => $this->getEventId(),
+            'records' => [$this->getRecordId()]
+        );
+        $data = array();
+        $record = \REDCap::getData($param);
+        $this->record = $record;
+    }
+
+    /**
+     * @return array
+     */
+    public function getDownloadLinks()
+    {
+        return $this->downloadLinks;
+    }
+
+    /**
+     * @param array $downloadLinks
+     */
+    public function setDownloadLinks(array $downloadLinks)
+    {
+        $this->downloadLinks = $downloadLinks;
+    }
 }

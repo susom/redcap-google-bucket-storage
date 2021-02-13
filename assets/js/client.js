@@ -6,6 +6,7 @@ Client = {
     recordId: '',
     eventId: '',
     instanceId: '',
+    downloadLinks: [],
     form: [],
     fields: [],
     filesPath: {},
@@ -63,6 +64,12 @@ Client = {
     processFields: function () {
         for (var prop in Client.fields) {
             $elem = jQuery("input[name=" + prop + "]").attr('type', 'hidden').addClass('google-storage')
+            if ($elem.val() !== '') {
+                var files = Client.downloadLinks[prop];
+                for (var file in files) {
+                    $('<a target="_blank" href="' + files[file] + '">' + file + '</a><br>').insertAfter($elem);
+                }
+            }
             $('<form class="google-storage-form" enctype="multipart/form-data"><input multiple class="google-storage-field" name="file" data-field="' + prop + '" type="file"/></form>').insertAfter($elem)
         }
     },
@@ -98,7 +105,7 @@ Client = {
             type: 'PUT',
 
             // Form data
-            data: data,
+            data: file,
 
             // Tell jQuery not to process data or worry about content-type
             // You *must* include these options!

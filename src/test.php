@@ -39,7 +39,10 @@ namespace Stanford\GoogleStorage;
             data: {
                 'content_type': document.getElementById('file-type').files[0].type,
                 'file_name': document.getElementById('file-type').files[0].name,
-                'bucket_name': 'redcap-storage-test'
+                'field_name': 'google_file',
+                'record_id': 1,
+                'event_id': 156,
+                'instance_id': 1
             },
             success: function (data) {
                 var response = JSON.parse(data)
