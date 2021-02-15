@@ -40,7 +40,7 @@ Client = {
         //     Client.uploadFile(form)
         // })
     },
-    saveRecord: function () {
+    saveRecord: function (path) {
         $.ajax({
             // Your server script to process the upload
             url: Client.saveRecordURLAjax,
@@ -57,31 +57,33 @@ Client = {
                 var response = JSON.parse(data)
                 if (response.status === 'success') {
                     Client.downloadLinks = response.links
-                    Client.processFields()
+                    Client.processFields(path)
                 }
             }
         });
     },
-    cleanFields: function () {
-        $(".google-storage-link").empty();
-        $(".google-storage-link").remove();
-        $(".google-storage-form").empty();
-        $(".google-storage-form").remove();
-        $("progress").empty();
-        $("progress").remove();
-    },
-    processFields: function () {
-        Client.cleanFields()
+    processFields: function (path) {
         for (var prop in Client.fields) {
             $elem = jQuery("input[name=" + prop + "]").attr('type', 'hidden').addClass('google-storage');
 
             if ($elem.val() !== '') {
                 var files = Client.downloadLinks[prop];
-                for (var file in files) {
-                    $('<a class="google-storage-link" target="_blank" href="' + files[file] + '">' + file + '</a><br>').insertAfter($elem);
+                if (path === undefined) {
+                    var $links = $('<div id="' + prop + '-links"></div>')
+                    for (var file in files) {
+                        $links.append('<div id="' + Client.convertPathToASCII(file) + '"><a class="google-storage-link" target="_blank" href="' + files[file] + '">' + file + '</a><br></div>')
+                    }
+                    $links.insertAfter($elem);
+                    // if path is defined this mean the function was called after upload is complete. then we need to replace only the progress bar that completed.
+                } else {
+                    $("#" + Client.convertPathToASCII(path)).html('<a class="google-storage-link" target="_blank" href="' + files[path] + '">' + path + '</a><br>')
                 }
             }
-            $('<form class="google-storage-form" enctype="multipart/form-data"><input multiple class="google-storage-field" name="file" data-field="' + prop + '" type="file"/></form>').insertAfter($elem)
+            // only add form in the first time.
+            if (path === undefined) {
+                $('<form class="google-storage-form" enctype="multipart/form-data"><input multiple class="google-storage-field" name="file" data-field="' + prop + '" type="file"/></form>').insertAfter($elem)
+            }
+
         }
     },
     getSignedURL: function (type, name, field, file) {
@@ -107,9 +109,14 @@ Client = {
             }
         });
     },
+    convertPathToASCII: function (path) {
+        return path
+            .split('')
+            .map(x => x.charCodeAt(0))
+            .reduce((a, b) => a + b);
+    },
     uploadFile: function (url, type, file, path, field) {
-        var data = new FormData();
-        data.append('file', file)
+
         $.ajax({
             // Your server script to process the upload
             url: url,
@@ -127,16 +134,21 @@ Client = {
                 "Access-Control-Allow-Origin": "*",
                 "Content-Type": type,
             },
+
             beforeSend: function () {
-                $('<progress data-name="' + file.name + '"></progress>' + file.name + '<br>').insertAfter(Client.form);
+                if ($('#' + Client.convertPathToASCII(path)).length) {
+                    $('#' + Client.convertPathToASCII(path)).html('<progress data-name="' + file.name + '"></progress>' + file.name + '<br></div>')
+                } else {
+                    $('<div id="' + Client.convertPathToASCII(path) + '"><progress data-name="' + file.name + '"></progress>' + file.name + '<br></div>').insertAfter(Client.form);
+                }
             },
             complete: function () {
                 if (Client.filesPath[field] === undefined) {
                     Client.filesPath[field] = path
                 } else {
-                    Client.filesPath[field] += ', ' + path
+                    Client.filesPath[field] += ',' + path
                 }
-                Client.saveRecord();
+                Client.saveRecord(path);
             },
             // Custom XMLHttpRequest
             xhr: function () {
