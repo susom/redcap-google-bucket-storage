@@ -1,19 +1,31 @@
-This code will be a little confusing because I started off trying to just use a token to
-access my bucket.  I was able to do it through Postman so I started implementing it here.
-But then I realized that I think I need to use a signedURL because of CORS. So there is reference
-to tokens in the code but I am not actually using them.  I am just retrieving a signedURL.
+#Google Storage
+This EM will allow users to upload files from REDCap form/survey directly into your Google Storage bucket. The upload is 
+happening directly from user client to bucket with no REDCap as middleware. 
 
-This is the CORS page that I got stuck on when trying to upload or download files:
+####Google Storage configuration:
+1. Create your bucket using following link https://cloud.google.com/storage/docs/creating-buckets#storage-create-bucket-console
+2. Create a Google Storage Service account that will access the bucket on behalf of your REDCap project. https://cloud.google.com/iam/docs/creating-managing-service-accounts
+3. After creating service account a JSON file contains the account credentials will be downloaded on your machine. The EM needs the content of that file for configuration. 
+4. Add the newly created service account into your bucket (**Note: if you want to access multiple buckets you need to repeat below steps for each bucket**). 
 
-https://cloud.google.com/storage/docs/configuring-cors#configure-cors-bucket
+    a. Copy the value of client_email key in the service account JSON file. It will be something like '[SERVICE_ACCOUNT_NAME]@[PROJECT_ID].iam.gserviceaccount.com'. 
+    
+    b. In Google cloud console go to your newly created bucket. From left main menu click Storage -> Browser -> [YOUR_BUCKET_NAME]
+    
+    c. Click on Permission tab then click on add. In New Member box paste the client email you copied from the JSON file. 
+    
+    d. in role box search for storage admin. then click Save. 
+    
+####REDCap EM configuration:
+1. Click on External Modules in left Main Menu. then click configure for `GoogleStorage - v9.9.9`
+2. from your Service Account JSON file copy the value of project_id and paste in `Google Storage Project ID`
+3. Copy the json file content and save it into `Google Storage API Service Account`
+4. Define the list of buckets name that you want to access via this EM.
 
-I could not make the preflight check work since I was not running a secure local server.
+![Alt text](assets/images/redcap-em-config.png?raw=true "REDCap EM Config" )
 
-The only code that is usable is the PickFile.php code which will allow you to pick a file
-from your computer and upload it (although most of that is commented out. I started
-very simple).  This code has the reading of the file commented out since
-I was only trying to get something working.
+####REDCap Form Configuration:
+1. Create new text form field. 
+2. In Action Tags/Field Annotation box add following `@GOOGLE-STORAGE=[YOUR_BUCKET_NAME]`
 
-Also, the code to create the signed URL is commented out because I focused on uploading
-a text document up to my bucket.  Instead, I just retrieved a signed URL from my google sandbox
-which performs the timed URL updates for me.
+![Alt text](assets/images/redcap-field-config.png?raw=true "REDCap Field Config")

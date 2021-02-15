@@ -62,13 +62,13 @@
   "project-settings": [
     {
       "key": "google-project-id",
-      "name": "<h3>Google Storage Project ID</h3>",
+      "name": "<h5>Google Storage Project ID</h5>",
       "required": true,
       "type": "text"
     },
     {
       "key": "google-api-token",
-      "name": "<h3>Google Storage API Token</h3>",
+      "name": "<h5>Google Storage API Service Account</h5>",
       "required": true,
       "type": "textarea"
     },
@@ -81,7 +81,7 @@
       "sub_settings": [
         {
           "key": "google-storage-bucket",
-          "name": "<h3>Google Storage Bucket that will be used to save data</h3>",
+          "name": "<h5>Google Storage Bucket that will be used to save data</h5>",
           "required": true,
           "type": "text"
         }
