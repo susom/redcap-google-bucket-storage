@@ -139,6 +139,7 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
         if (empty($response['errors'])) {
             $this->setRecord();
             $this->prepareDownloadLinks();
+            $this->uploadLogFile(USERID, $this->getRecordId(), $data['redcap_event_name'], $field, $filesPath);
             return array('status' => 'success', 'links' => $this->getDownloadLinks());
         } else {
             if (is_array($response['errors'])) {
@@ -147,6 +148,42 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
                 throw new \Exception($response['errors']);
             }
         }
+    }
+
+    private function prepareLogPath($field, $path)
+    {
+        $match = explode('/', $path[$field]);
+        $folder = $match[0];
+        return $folder . '/' . date('Y-m-d') . '.log';
+    }
+
+    private function uploadLogFile($userId, $recordId, $eventName, $field, $path)
+    {
+        $logPath = $this->prepareLogPath($field, $path);
+        $signedURL = $this->getGoogleStorageSignedUrl($this->getBucket($field), $logPath);
+        $uploadURL = $this->getGoogleStorageSignedUploadUrl($this->getBucket($field), $logPath, 'text/plain');
+        $content = file_get_contents($signedURL);
+        if ($content == false) {
+            $content = "user_id,record_id,event_name,field,path,created_at\n";
+        }
+        $links = explode(',', $path[$field]);
+        $time = time();
+        foreach ($links as $link) {
+            $content .= "$userId,$recordId,$eventName,$field,$link,$time\n";
+        }
+
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $uploadURL);
+        curl_setopt($curl, CURLOPT_TIMEOUT, 30);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: text/plain'));
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $content);
+        if ($response = curl_exec($curl) === false) {
+            throw new \LogicException(curl_error($curl));
+        }
+        curl_close($curl);
     }
 
     public function redcap_every_page_top()
