@@ -12,6 +12,8 @@ Client = {
     filesPath: {},
     init: function () {
 
+
+        Client.removeAutoParam()
         // when ajax is completed then save the record.
         // jQuery(document).on({
         //     ajaxStop: function () {
@@ -40,6 +42,14 @@ Client = {
         //     Client.uploadFile(form)
         // })
     },
+    // we want to remove this param so after on save record in saves to correct record id.
+    removeAutoParam: function () {
+        let url = new URL(window.location.href);
+        var temp = url
+        temp = temp.toString().replace('&auto=1', '');
+        window.history.pushState({path: temp}, '', temp);
+
+    },
     saveRecord: function (path) {
         $.ajax({
             // Your server script to process the upload
@@ -64,10 +74,11 @@ Client = {
     },
     processFields: function (path) {
         for (var prop in Client.fields) {
-            $elem = jQuery("input[name=" + prop + "]").attr('type', 'hidden').addClass('google-storage');
+            $elem = jQuery("input[name=" + prop + "]").attr('type', 'hidden');
+            var files = Client.downloadLinks[prop];
 
-            if ($elem.val() !== '') {
-                var files = Client.downloadLinks[prop];
+            if ($elem.val() !== '' || (files != undefined)) {
+
                 if (path === undefined) {
                     var $links = $('<div id="' + prop + '-links"></div>')
                     for (var file in files) {
