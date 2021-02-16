@@ -15,7 +15,31 @@ happening directly from user client to bucket with no REDCap as middleware.
     c. Click on Permission tab then click on add. In New Member box paste the client email you copied from the JSON file. 
     
     d. in role box search for storage admin. then click Save. 
-    
+5. Using `gutil` set below CORS settings for your bucket. https://cloud.google.com/storage/docs/configuring-cors#gsutil
+
+`[
+   {
+     "origin": [
+       "[YOUR_DOMAIN]"
+     ],
+     "responseHeader": [
+       "Content-Type",
+       "X-Requested-With",
+       "Access-Control-Allow-Origin",
+       "x-goog-resumable"
+     ],
+     "method": [
+       "GET",
+       "HEAD",
+       "DELETE",
+       "POST",
+       "PUT",
+       "OPTIONS"
+     ],
+     "maxAgeSeconds": 3600
+   }
+ ]`
+
 #### REDCap EM configuration:
 1. Click on External Modules in left Main Menu. then click configure for `GoogleStorage - v9.9.9`
 2. from your Service Account JSON file copy the value of project_id and paste in `Google Storage Project ID`
