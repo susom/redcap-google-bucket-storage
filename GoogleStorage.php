@@ -207,7 +207,6 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
             }
             $this->setRecord();
             $this->prepareDownloadLinks();
-            $this->emLog('after setting download links.');
             $this->includeFile("src/client.php");
         }
 

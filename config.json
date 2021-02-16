@@ -30,23 +30,7 @@
   "links": {
     "control-center": [
     ],
-    "project": [
-      {
-        "name": "Google Storage Upload Initiator",
-        "icon": "gear",
-        "url": "src/PickFile.php"
-      },
-      {
-        "name": "Google Token Retriever",
-        "icon": "gear",
-        "url": "src/RetrieveTokenAndUrl.php"
-      },
-      {
-        "name": "Google Test",
-        "icon": "gear",
-        "url": "src/test.php"
-      }
-    ]
+    "project": []
   },
   "no-auth-pages": [
     "src/test"
