@@ -2,6 +2,7 @@
 namespace Stanford\GoogleStorage;
 /** @var \Stanford\GoogleStorage\GoogleStorage $this */
 
+$this->emLog('inside src/client.php');
 ?>
 <script src="<?php echo $this->getUrl('assets/js/client.js') ?>"></script>
 <script>
