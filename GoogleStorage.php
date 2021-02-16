@@ -97,15 +97,18 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
 
     private function prepareGoogleStorageFields()
     {
+        $this->emLog('prepareGoogleStorageFields');
         $fields = array();
         $re = '/^@GOOGLE-STORAGE=/m';
         foreach ($this->getProject()->metadata as $name => $field) {
+            $this->emLog($field);
             preg_match_all($re, $field['misc'], $matches, PREG_SET_ORDER, 0);
             if (!empty($matches)) {
                 $fields[$name] = str_replace('@GOOGLE-STORAGE=', '', $field['misc']);
             }
             unset($matches);
         }
+        $this->emLog($fields);
         $this->setFields($fields);
     }
 
@@ -188,6 +191,8 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
 
     public function redcap_every_page_top()
     {
+        $this->emLog(strpos($_SERVER['SCRIPT_NAME'], 'DataEntry/index.php') !== false);
+        $this->emLog($this->getFields());
         // in case we are loading record homepage load its the record children if existed
         if (strpos($_SERVER['SCRIPT_NAME'], 'DataEntry/index.php') !== false && $this->getFields()) {
 
