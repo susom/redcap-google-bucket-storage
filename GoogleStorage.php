@@ -305,7 +305,7 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
     /**
      * @param Bucket[] $buckets
      */
-    public function setBuckets(array $buckets)
+    public function setBuckets($buckets)
     {
         $this->buckets = $buckets;
     }
@@ -353,7 +353,7 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
     /**
      * @param array $fields
      */
-    public function setFields(array $fields)
+    public function setFields($fields)
     {
         $this->fields = $fields;
     }
@@ -377,7 +377,7 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
     /**
      * @return int
      */
-    public function getEventId(): int
+    public function getEventId()
     {
         return $this->eventId;
     }
@@ -385,7 +385,7 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
     /**
      * @param int $eventId
      */
-    public function setEventId(int $eventId): void
+    public function setEventId($eventId)
     {
         $this->eventId = $eventId;
     }
@@ -441,7 +441,7 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
     /**
      * @param array $downloadLinks
      */
-    public function setDownloadLinks(array $downloadLinks)
+    public function setDownloadLinks($downloadLinks)
     {
         $this->downloadLinks = $downloadLinks;
     }
