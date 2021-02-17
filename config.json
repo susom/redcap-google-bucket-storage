@@ -68,6 +68,12 @@
           "name": "<h5>Google Storage Bucket that will be used to save data</h5>",
           "required": true,
           "type": "text"
+        },
+        {
+          "key": "google-storage-bucket-prefix",
+          "name": "<h5>You can specify a prefix for all files in your bucket (Optional).</h5>",
+          "required": false,
+          "type": "text"
         }
       ]
     },

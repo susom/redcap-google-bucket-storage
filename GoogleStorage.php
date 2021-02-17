@@ -18,6 +18,7 @@ use Google\Cloud\Storage\Bucket;
  * @property array $fields
  * @property array $record
  * @property array $downloadLinks
+ * @property array $bucketPrefix
  * @property \Project $project
  * @property string $recordId
  * @property int $eventId
@@ -58,6 +59,7 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
 
     private $downloadLinks;
 
+    private $bucketPrefix;
     public function __construct()
     {
         try {
@@ -76,10 +78,13 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
 
                 if (!empty($this->getInstances())) {
                     $buckets = array();
+                    $prefix = array();
                     foreach ($this->getInstances() as $instance) {
                         $buckets[$instance['google-storage-bucket']] = $this->getClient()->bucket($instance['google-storage-bucket']);
+                        $prefix[$instance['google-storage-bucket']] = $instance['google-storage-bucket-prefix'];
                     }
                     $this->setBuckets($buckets);
+                    $this->setBucketPrefix($prefix);
                 }
             }
         } catch (\Exception $e) {
@@ -150,16 +155,16 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
         }
     }
 
-    private function prepareLogPath($field, $path)
+    private function prepareLogPath($path)
     {
-        $match = explode('/', $path[$field]);
+        $match = explode('/', $path);
         $folder = $match[0];
         return $folder . '/' . date('Y-m-d') . '.log';
     }
 
     private function uploadLogFile($userId, $recordId, $eventName, $field, $path)
     {
-        $logPath = $this->prepareLogPath($field, $path);
+        $logPath = $this->prepareLogPath($path[$field]);
         $signedURL = $this->getGoogleStorageSignedUrl($this->getBucket($field), $logPath);
         $uploadURL = $this->getGoogleStorageSignedUploadUrl($this->getBucket($field), $logPath, 'text/plain');
         $content = file_get_contents($signedURL);
@@ -228,9 +233,18 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
         $this->setDownloadLinks($links);
     }
 
-    public function buildUploadPath($fileName, $recordId, $eventId, $instanceId)
+    public function buildUploadPath($prefix, $fieldName, $fileName, $recordId, $eventId, $instanceId)
     {
-        return $recordId . '_' . $eventId . '_' . $instanceId . '/' . $fileName;
+        $prefix = $prefix != '' ? $prefix . '/' : '';
+
+        if ($this->getProject()->longitudinal) {
+            return $prefix . $recordId . '/' . $fieldName . '/' . \REDCap::getEventNames($eventId) . '/' . $instanceId . '/' . $fileName;
+        }
+        if (!empty($this->getProject()->RepeatingFormsEvents)) {
+            return $prefix . $recordId . '/' . $fieldName . '/' . $instanceId . '/' . $fileName;
+        }
+
+        return $prefix . $recordId . '/' . $fieldName . '/' . $fileName;
     }
 
     /**
@@ -291,6 +305,16 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
     {
         $bucketName = $this->getFields()[$fieldName];
         return $this->getBuckets()[$bucketName];
+    }
+
+    /**
+     * @param string $fieldName
+     * @return string
+     */
+    public function getFieldBucketPrefix($fieldName)
+    {
+        $bucketName = $this->getFields()[$fieldName];
+        return $this->getBucketPrefix()[$bucketName];
     }
 
     /**
@@ -444,4 +468,22 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
     {
         $this->downloadLinks = $downloadLinks;
     }
+
+    /**
+     * @return array
+     */
+    public function getBucketPrefix(): array
+    {
+        return $this->bucketPrefix;
+    }
+
+    /**
+     * @param array $bucketPrefix
+     */
+    public function setBucketPrefix(array $bucketPrefix): void
+    {
+        $this->bucketPrefix = $bucketPrefix;
+    }
+
+
 }

@@ -11,7 +11,8 @@ try {
     $eventId = filter_var($_GET['event_id'], FILTER_SANITIZE_NUMBER_INT);
     $instanceId = filter_var($_GET['instance_id'], FILTER_SANITIZE_NUMBER_INT);
     $bucket = $module->getBucket($fieldName);
-    $path = $module->buildUploadPath($fileName, $recordId, $eventId, $instanceId);
+    $prefix = $module->getFieldBucketPrefix($fieldName);
+    $path = $module->buildUploadPath($prefix, $fieldName, $fileName, $recordId, $eventId, $instanceId);
     $response = $module->getGoogleStorageSignedUploadUrl($bucket, $path, $contentType);
     echo json_encode(array('status' => 'success', 'url' => $response, 'path' => $path));
 } catch (\LogicException $e) {
