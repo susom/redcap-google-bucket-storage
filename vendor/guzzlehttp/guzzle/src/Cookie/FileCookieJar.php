@@ -15,7 +15,7 @@ class FileCookieJar extends CookieJar
     /**
      * Create a new FileCookieJar object
      *
-     * @param string $cookieFile File to store the cookie data
+     * @param string $cookieFile        File to store the cookie data
      * @param bool $storeSessionCookies Set to true to store session cookies
      *                                  in the cookie jar.
      *
