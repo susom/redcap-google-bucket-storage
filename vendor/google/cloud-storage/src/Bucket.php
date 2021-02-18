@@ -727,8 +727,7 @@ class Bucket
      *
      * @codingStandardsIgnoreStart
      * @see https://cloud.google.com/storage/docs/pubsub-notifications Cloud PubSub Notifications.
-     * @see https://cloud.google.com/storage/docs/json_api/v1/notifications/insert Notifications insert API
-     *     documentation.
+     * @see https://cloud.google.com/storage/docs/json_api/v1/notifications/insert Notifications insert API documentation.
      * @see https://cloud.google.com/storage/docs/reporting-changes Registering Object Changes.
      * @codingStandardsIgnoreEnd
      *
@@ -977,8 +976,7 @@ class Bucket
      *           Uniform bucket-level access, please review the
      *           [feature documentation](https://cloud.google.com/storage/docs/uniform-bucket-level-access),
      *           as well as
-     *           [Should You Use uniform bucket-level
-     *     access](https://cloud.google.com/storage/docs/uniform-bucket-level-access#should-you-use)
+     *           [Should You Use uniform bucket-level access](https://cloud.google.com/storage/docs/uniform-bucket-level-access#should-you-use)
      * }
      * @codingStandardsIgnoreEnd
      * @return array
@@ -1299,8 +1297,7 @@ class Bucket
      * ```
      *
      * @codingStandardsIgnoreStart
-     * @see https://cloud.google.com/storage/docs/access-control/iam-with-json-and-xml Storage Access Control
-     *     Documentation
+     * @see https://cloud.google.com/storage/docs/access-control/iam-with-json-and-xml Storage Access Control Documentation
      * @see https://cloud.google.com/storage/docs/json_api/v1/buckets/getIamPolicy Get Bucket IAM Policy
      * @see https://cloud.google.com/storage/docs/json_api/v1/buckets/setIamPolicy Set Bucket IAM Policy
      * @see https://cloud.google.com/storage/docs/json_api/v1/buckets/testIamPermissions Test Bucket Permissions

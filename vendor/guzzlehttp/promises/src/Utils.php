@@ -249,11 +249,11 @@ final class Utils
      *
      * The returned promise is fulfilled with an array of inspection state arrays.
      *
+     * @see inspect for the inspection state array format.
+     *
      * @param mixed $promises Promises or values.
      *
      * @return PromiseInterface
-     * @see inspect for the inspection state array format.
-     *
      */
     public static function settle($promises)
     {

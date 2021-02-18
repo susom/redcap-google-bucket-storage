@@ -22,7 +22,6 @@ namespace Google\Auth\Credentials;
  * so including this dependency is not necessary, and will result in a
  * PHP fatal error in the App Engine environment.
  */
-
 use google\appengine\api\app_identity\AppIdentityService;
 use Google\Auth\CredentialsLoader;
 use Google\Auth\ProjectIdProviderInterface;

@@ -1350,10 +1350,10 @@ class OAuth2 implements FetchAuthTokenInterface
     }
 
     /**
-     * @param string $uri
-     * @return null|UriInterface
      * @todo handle uri as array
      *
+     * @param string $uri
+     * @return null|UriInterface
      */
     private function coerceUri($uri)
     {

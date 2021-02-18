@@ -25,8 +25,7 @@ use PhpConsole\Helper;
  * Display PHP error/debug log messages in Google Chrome console and notification popups, executes PHP code remotely
  *
  * Usage:
- * 1. Install Google Chrome extension
- * https://chrome.google.com/webstore/detail/php-console/nfhmhhlpfleoednkpnnnkolmclajemef
+ * 1. Install Google Chrome extension https://chrome.google.com/webstore/detail/php-console/nfhmhhlpfleoednkpnnnkolmclajemef
  * 2. See overview https://github.com/barbushin/php-console#overview
  * 3. Install PHP Console library https://github.com/barbushin/php-console#installation
  * 4. Example (result will looks like http://i.hizliresim.com/vg3Pz4.png)

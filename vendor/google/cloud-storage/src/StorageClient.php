@@ -322,8 +322,7 @@ class StorageClient
      *           Uniform bucket-level access, please review the
      *           [feature documentation](https://cloud.google.com/storage/docs/uniform-bucket-level-access),
      *           as well as
-     *           [Should You Use uniform bucket-level
-     *     access](https://cloud.google.com/storage/docs/uniform-bucket-level-access#should-you-use)
+     *           [Should You Use uniform bucket-level access](https://cloud.google.com/storage/docs/uniform-bucket-level-access#should-you-use)
      * }
      * @codingStandardsIgnoreEnd
      * @return Bucket

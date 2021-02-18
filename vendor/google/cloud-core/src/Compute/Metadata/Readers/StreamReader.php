@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 namespace Google\Cloud\Core\Compute\Metadata\Readers;
 
 use Google\Auth\Credentials\GCECredentials;

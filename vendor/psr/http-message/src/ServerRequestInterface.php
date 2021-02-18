@@ -236,10 +236,10 @@ interface ServerRequestInterface extends RequestInterface
      * immutability of the message, and MUST return an instance that has the
      * updated attribute.
      *
+     * @see getAttributes()
      * @param string $name The attribute name.
      * @param mixed $value The value of the attribute.
      * @return static
-     * @see getAttributes()
      */
     public function withAttribute($name, $value);
 
@@ -253,9 +253,9 @@ interface ServerRequestInterface extends RequestInterface
      * immutability of the message, and MUST return an instance that removes
      * the attribute.
      *
+     * @see getAttributes()
      * @param string $name The attribute name.
      * @return static
-     * @see getAttributes()
      */
     public function withoutAttribute($name);
 }

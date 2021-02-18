@@ -1,6 +1,5 @@
 <?php
 error_reporting(-1);
-
 use Rize\UriTemplate\UriTemplate;
 
 /**

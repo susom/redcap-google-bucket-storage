@@ -16,7 +16,7 @@ class InstalledVersions
                 'version' => 'dev-master',
                 'aliases' =>
                     array(),
-                'reference' => '671b474dcd870f6625de3989a118d4ce9e30fb1e',
+                'reference' => 'dca20d080a8e98df391abe96c21667a9cb265b9e',
                 'name' => '__root__',
             ),
         'versions' =>
@@ -27,7 +27,7 @@ class InstalledVersions
                         'version' => 'dev-master',
                         'aliases' =>
                             array(),
-                        'reference' => '671b474dcd870f6625de3989a118d4ce9e30fb1e',
+                        'reference' => 'dca20d080a8e98df391abe96c21667a9cb265b9e',
                     ),
                 'firebase/php-jwt' =>
                     array(
