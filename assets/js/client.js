@@ -159,6 +159,8 @@ Client = {
                 } else {
                     Client.filesPath[field] += ',' + path
                 }
+                // make sure to set the value in case user clicked default save button .
+                jQuery("input[name=" + field + "]").val(Client.filesPath[field]);
                 Client.saveRecord(path);
             },
             // Custom XMLHttpRequest
