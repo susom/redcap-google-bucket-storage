@@ -157,7 +157,11 @@ Client = {
                 if (Client.filesPath[field] === undefined) {
                     Client.filesPath[field] = path
                 } else {
-                    Client.filesPath[field] += ',' + path
+                    // only attach if file is new file
+                    var f = Client.filesPath[field];
+                    if (Client.filesPath[field].indexOf(path) !== -1) {
+                        Client.filesPath[field] += ',' + path
+                    }
                 }
                 // make sure to set the value in case user clicked default save button .
                 jQuery("input[name=" + field + "]").val(Client.filesPath[field]);

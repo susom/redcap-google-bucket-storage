@@ -19,6 +19,7 @@ use Google\Cloud\Storage\Bucket;
  * @property array $record
  * @property array $downloadLinks
  * @property array $bucketPrefix
+ * @property array $filesPath
  * @property \Project $project
  * @property string $recordId
  * @property int $eventId
@@ -60,6 +61,9 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
     private $downloadLinks;
 
     private $bucketPrefix;
+
+    private $filesPath;
+
     public function __construct()
     {
         try {
@@ -157,9 +161,17 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
 
     private function prepareLogPath($path)
     {
+        $lofFile = date('Y-m-d') . '.log';
+        $path = $this->getFullPrefix($path) . $lofFile;
+        return $path;
+    }
+
+    private function getFullPrefix($path)
+    {
         $match = explode('/', $path);
-        $folder = $match[0];
-        return $folder . '/' . date('Y-m-d') . '.log';
+        $filename = end($match);
+        $path = str_replace($filename, '', $path);
+        return $path;
     }
 
     private function uploadLogFile($userId, $recordId, $eventName, $field, $path)
@@ -217,19 +229,54 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
 
     }
 
+    /**
+     * @param \Google\Cloud\Storage\Bucket $bucket
+     * @param string $prefix
+     * @return array
+     */
+    private function getPrefixObjects($bucket, $prefix)
+    {
+        $files = array();
+        $objects = $bucket->objects(array('prefix' => $prefix));
+        foreach ($objects as $object) {
+            $re = '/[0-9]{4}-[0-9]{2}-[0-9]{2}.log/m';
+
+            preg_match_all($re, $object->name(), $matches, PREG_SET_ORDER, 0);
+
+            if (!empty($matches)) {
+                continue;
+            }
+            $files[] = $object->name();
+        }
+        return $files;
+    }
+
     public function prepareDownloadLinks()
     {
         $record = $this->getRecord();
         $links = array();
+        $filesPath = array();
         foreach ($this->getFields() as $field => $bucket) {
             if ($record[$this->getRecordId()][$this->getEventId()][$field] != '') {
                 $files = explode(",", $record[$this->getRecordId()][$this->getEventId()][$field]);
                 $bucket = $this->getBucket($field);
-                foreach ($files as $file) {
-                    $links[$field][$file] = $this->getGoogleStorageSignedUrl($bucket, trim($file));
+
+                if (!empty($field)) {
+                    // check if files still exist in bucket.
+                    $prefix = $this->getFullPrefix($files[0]);
+                    $files = $this->getPrefixObjects($bucket, $prefix);
+                    foreach ($files as $file) {
+                        $links[$field][$file] = $this->getGoogleStorageSignedUrl($bucket, trim($file));
+                        if (isset($filesPath[$field])) {
+                            $filesPath[$field] .= ',' . $file;
+                        } else {
+                            $filesPath[$field] = $file;
+                        }
+                    }
                 }
             }
         }
+        $this->setFilesPath($filesPath);
         $this->setDownloadLinks($links);
     }
 
@@ -483,6 +530,22 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
     public function setBucketPrefix(array $bucketPrefix): void
     {
         $this->bucketPrefix = $bucketPrefix;
+    }
+
+    /**
+     * @return array
+     */
+    public function getFilesPath(): array
+    {
+        return $this->filesPath;
+    }
+
+    /**
+     * @param array $filesPath
+     */
+    public function setFilesPath(array $filesPath): void
+    {
+        $this->filesPath = $filesPath;
     }
 
 
