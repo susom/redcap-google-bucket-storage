@@ -1,7 +1,31 @@
 <?php
 namespace Stanford\GoogleStorage;
 /** @var \Stanford\GoogleStorage\GoogleStorage $module */
+try {
+    $bucket = $module->getClient()->bucket('redcap-storage-test');
+    $object = $bucket->object('config.json');
+    $uploadURL = $object->beginSignedUploadSession(
+# This URL is valid for 15 minutes
+        [
+            'contentType' => 'application/json',
+            'version' => 'v4',
+        ]
+    );
 
+    $client = new \GuzzleHttp\Client();
+    $response = $client->request('PUT', $uploadURL, [
+        'multipart' => [
+            [
+                'name' => 'body',
+                'contents' => json_encode(['name' => 'Test', 'country' => 'Deutschland']),
+                'headers' => ['Content-Type' => 'application/json']
+            ]
+        ]
+    ]);
+    $response = $response->getBody();
+} catch (\Exception $e) {
+    echo $e->getMessage();
+}
 ?>
 
 
