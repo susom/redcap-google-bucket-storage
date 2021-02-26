@@ -69,6 +69,9 @@ Client = {
                     Client.downloadLinks = response.links
                     Client.processFields(path)
                 }
+            },
+            error: function (request, error) {
+                alert("Request: " + JSON.stringify(request));
             }
         });
     },
@@ -117,6 +120,9 @@ Client = {
                 if (response.status === 'success') {
                     Client.uploadFile(response.url, type, file, response.path, field)
                 }
+            },
+            error: function (request, error) {
+                alert("Request: " + JSON.stringify(request));
             }
         });
     },
@@ -154,18 +160,24 @@ Client = {
                 }
             },
             complete: function () {
-                if (Client.filesPath[field] === undefined) {
-                    Client.filesPath[field] = path
+                if (Client.filesPath[field] === undefined || Client.filesPath[field] === '') {
+                    Client.filesPath = {
+                        [field]: path
+                    }
                 } else {
                     // only attach if file is new file
-                    var f = Client.filesPath[field];
                     if (Client.filesPath[field].indexOf(path) !== -1) {
                         Client.filesPath[field] += ',' + path
                     }
                 }
+
+
                 // make sure to set the value in case user clicked default save button .
                 jQuery("input[name=" + field + "]").val(Client.filesPath[field]);
                 Client.saveRecord(path);
+            },
+            error: function (request, error) {
+                alert("Request: " + JSON.stringify(request));
             },
             // Custom XMLHttpRequest
             xhr: function () {
