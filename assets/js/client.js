@@ -14,12 +14,15 @@ Client = {
 
 
         Client.removeAutoParam()
-        // when ajax is completed then save the record.
-        // jQuery(document).on({
-        //     ajaxStop: function () {
-        //
-        //     }
-        // });
+        // with ajax disable all submit buttons till ajax is completed
+        jQuery(document).on({
+            ajaxStop: function () {
+                $(".btn-primaryrc").removeAttr('disabled')
+            },
+            ajaxStart: function () {
+                $(".btn-primaryrc").attr('disabled', 'disabled')
+            }
+        });
 
         Client.processFields();
         $(".google-storage-field").on('change', function () {
@@ -154,30 +157,32 @@ Client = {
 
             beforeSend: function () {
                 if ($('#' + Client.convertPathToASCII(path)).length) {
-                    $('#' + Client.convertPathToASCII(path)).html('<progress data-name="' + file.name + '"></progress>' + file.name + '<br></div>')
+                    $('#' + Client.convertPathToASCII(path)).html('<progress data-name="' + file.name + '"></progress>' + file.name + '<span data-name="' + file.name + '"> <i class="fas fa-window-close"></i></span><br></div>')
                 } else {
-                    $('<div id="' + Client.convertPathToASCII(path) + '"><progress data-name="' + file.name + '"></progress>' + file.name + '<br></div>').insertAfter(Client.form);
+                    $('<div id="' + Client.convertPathToASCII(path) + '"><progress data-name="' + file.name + '"></progress>' + file.name + '<span data-name="' + file.name + '"> <i class="fas fa-window-close"></i></span><br></div>').insertAfter(Client.form);
                 }
             },
-            complete: function () {
-                if (Client.filesPath[field] === undefined || Client.filesPath[field] === '') {
-                    Client.filesPath = {
-                        [field]: path
+            complete: function (xhr, status) {
+                if (status == 'success') {
+                    console.log(Client.filesPath[field])
+                    if (Client.filesPath[field] === undefined || Client.filesPath[field] === '') {
+                        Client.filesPath = {
+                            [field]: path
+                        }
+                    } else {
+                        console.log('here')
+                        console.log(Client.filesPath[field].indexOf(path) !== -1)
+                        // only attach if file is new file
+                        if (Client.filesPath[field].indexOf(path) !== false) {
+                            Client.filesPath[field] += ',' + path
+                        }
                     }
-                } else {
-                    // only attach if file is new file
-                    if (Client.filesPath[field].indexOf(path) !== -1) {
-                        Client.filesPath[field] += ',' + path
-                    }
+                    console.log(Client.filesPath[field])
+                    // make sure to set the value in case user clicked default save button .
+                    jQuery("input[name=" + field + "]").val(Client.filesPath[field]);
+                    Client.saveRecord(path);
                 }
 
-
-                // make sure to set the value in case user clicked default save button .
-                jQuery("input[name=" + field + "]").val(Client.filesPath[field]);
-                Client.saveRecord(path);
-            },
-            error: function (request, error) {
-                alert("Request: " + JSON.stringify(request));
             },
             // Custom XMLHttpRequest
             xhr: function () {
@@ -192,7 +197,21 @@ Client = {
                             });
                         }
                     }, false);
+
+                    myXhr.upload.addEventListener('abort', function (e) {
+                        console.log(e)
+                    }, false);
                 }
+
+                var _cancel = $('span[data-name="' + file.name + '"]');
+
+                _cancel.on('click', function () {
+                    if (confirm('Are you sure you want to cancel upload for ' + file.name + '?')) {
+                        myXhr.abort();
+                        $('#' + Client.convertPathToASCII(path)).html('')
+                    }
+                })
+
                 return myXhr;
             }
         });
