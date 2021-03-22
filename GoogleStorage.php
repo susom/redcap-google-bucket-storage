@@ -168,9 +168,10 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
 
     private function getFullPrefix($path)
     {
-        $match = explode('/', $path);
+        $filePath = explode(',', $path);
+        $match = explode('/', $filePath[0]);
         $filename = end($match);
-        $path = str_replace($filename, '', $path);
+        $path = str_replace($filename, '', $filePath[0]);
         return $path;
     }
 
