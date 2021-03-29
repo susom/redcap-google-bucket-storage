@@ -207,7 +207,7 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
     public function redcap_every_page_top()
     {
         // in case we are loading record homepage load its the record children if existed
-        if (strpos($_SERVER['SCRIPT_NAME'], 'DataEntry/index.php') !== false && $this->getFields()) {
+        if ((strpos($_SERVER['SCRIPT_NAME'], 'DataEntry/index.php') !== false || !preg_match("\/surveys\/\?s=[a-zA-Z0-9]{10}", $_SERVER['REQUEST_URI'])) && $this->getFields()) {
 
 
             if (isset($_GET['id'])) {
