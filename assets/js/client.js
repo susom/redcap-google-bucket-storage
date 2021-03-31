@@ -88,12 +88,22 @@ Client = {
                 if (path === undefined) {
                     var $links = $('<div id="' + prop + '-links"></div>')
                     for (var file in files) {
-                        $links.append('<div id="' + Client.convertPathToASCII(file) + '"><a class="google-storage-link" target="_blank" href="' + files[file] + '">' + file + '</a><br></div>')
+                        // if download links are disable
+                        if (files[file] != '') {
+                            $links.append('<div id="' + Client.convertPathToASCII(file) + '"><a class="google-storage-link" target="_blank" href="' + files[file] + '">' + file + '</a><br></div>')
+                        } else {
+                            $links.append('<div id="' + Client.convertPathToASCII(file) + '">' + file + '<br></div>')
+                        }
                     }
                     $links.insertAfter($elem);
                     // if path is defined this mean the function was called after upload is complete. then we need to replace only the progress bar that completed.
                 } else {
-                    $("#" + Client.convertPathToASCII(path)).html('<a class="google-storage-link" target="_blank" href="' + files[path] + '">' + path + '</a><br>')
+                    // if download links are disable
+                    if (files[path] != '') {
+                        $("#" + Client.convertPathToASCII(path)).html('<a class="google-storage-link" target="_blank" href="' + files[path] + '">' + path + '</a><br>')
+                    } else {
+                        $("#" + Client.convertPathToASCII(path)).html('' + path + '<br>')
+                    }
                 }
             }
             // only add form in the first time.
@@ -164,20 +174,16 @@ Client = {
             },
             complete: function (xhr, status) {
                 if (status == 'success') {
-                    console.log(Client.filesPath[field])
                     if (Client.filesPath[field] === undefined || Client.filesPath[field] === '') {
                         Client.filesPath = {
                             [field]: path
                         }
                     } else {
-                        console.log('here')
-                        console.log(Client.filesPath[field].indexOf(path) !== -1)
                         // only attach if file is new file
                         if (Client.filesPath[field].indexOf(path) !== false) {
                             Client.filesPath[field] += ',' + path
                         }
                     }
-                    console.log(Client.filesPath[field])
                     // make sure to set the value in case user clicked default save button .
                     jQuery("input[name=" + field + "]").val(Client.filesPath[field]);
                     Client.saveRecord(path);

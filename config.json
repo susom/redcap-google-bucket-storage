@@ -78,6 +78,12 @@
       ]
     },
     {
+      "key": "disable-file-link",
+      "name": "<b>Do not display link for uploaded file.</b>",
+      "required": false,
+      "type": "checkbox"
+    },
+    {
       "key": "enable-project-debug-logging",
       "name": "<b>Enable Debug Logging</b>",
       "required": false,

@@ -24,6 +24,7 @@ use Google\Cloud\Storage\Bucket;
  * @property string $recordId
  * @property int $eventId
  * @property int $instanceId
+ * @property bool $linksDisabled
  */
 class GoogleStorage extends \ExternalModules\AbstractExternalModule
 {
@@ -64,6 +65,8 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
 
     private $filesPath;
 
+    private $linksDisabled;
+
     public function __construct()
     {
         try {
@@ -90,6 +93,9 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
                     $this->setBuckets($buckets);
                     $this->setBucketPrefix($prefix);
                 }
+
+                // lastly set flag to display uploaded file download links
+                $this->setLinksDisabled($this->getProjectSetting('disable-file-link'));
             }
         } catch (\Exception $e) {
             #echo $e->getMessage();
@@ -267,7 +273,12 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
                     $prefix = $this->getFullPrefix($files[0]);
                     $files = $this->getPrefixObjects($bucket, $prefix);
                     foreach ($files as $file) {
-                        $links[$field][$file] = $this->getGoogleStorageSignedUrl($bucket, trim($file));
+                        if ($this->isLinksDisabled()) {
+                            $links[$field][$file] = '';
+                        } else {
+                            $links[$field][$file] = $this->getGoogleStorageSignedUrl($bucket, trim($file));
+                        }
+
                         if (isset($filesPath[$field])) {
                             $filesPath[$field] .= ',' . $file;
                         } else {
@@ -549,5 +560,20 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
         $this->filesPath = $filesPath;
     }
 
+    /**
+     * @return bool
+     */
+    public function isLinksDisabled(): bool
+    {
+        return $this->linksDisabled;
+    }
+
+    /**
+     * @param bool $linksDisabled
+     */
+    public function setLinksDisabled(bool $linksDisabled): void
+    {
+        $this->linksDisabled = $linksDisabled;
+    }
 
 }
