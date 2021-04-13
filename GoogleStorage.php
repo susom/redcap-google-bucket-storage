@@ -237,6 +237,7 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
     }
 
     /**
+     * get list of all files under specific prefix
      * @param \Google\Cloud\Storage\Bucket $bucket
      * @param string $prefix
      * @return array
@@ -273,11 +274,12 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
                     $prefix = $this->getFullPrefix($files[0]);
                     $files = $this->getPrefixObjects($bucket, $prefix);
                     foreach ($files as $file) {
-                        if ($this->isLinksDisabled()) {
-                            $links[$field][$file] = '';
-                        } else {
-                            $links[$field][$file] = $this->getGoogleStorageSignedUrl($bucket, trim($file));
-                        }
+                        $links[$field][$file] = '';
+//                        if ($this->isLinksDisabled()) {
+//                            $links[$field][$file] = '';
+//                        } else {
+//                            $links[$field][$file] = $this->getGoogleStorageSignedUrl($bucket, trim($file));
+//                        }
 
                         if (isset($filesPath[$field])) {
                             $filesPath[$field] .= ',' . $file;

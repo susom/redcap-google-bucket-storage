@@ -36,14 +36,13 @@ Client = {
             //Client.getSignedURL(file[0].type, file[0].name, field)
         });
 
-        // $('.google-storage-upload').on('click', function () {
-        //     if (Client.signedURL === '') {
-        //         alert('Please make sure to select a file to upload');
-        //         return;
-        //     }
-        //
-        //     Client.uploadFile(form)
-        // })
+
+        $(document).on('click', '.get-download-link', function () {
+            var fieldName = $(this).data('field-name')
+            var fileName = $(this).data('file-name')
+            var id = $(this).data('file-id')
+            Client.getDownloadSignedURL(fieldName, fileName, id)
+        })
     },
     // we want to remove this param so after on save record in saves to correct record id.
     removeAutoParam: function () {
@@ -92,7 +91,7 @@ Client = {
                         if (files[file] != '') {
                             $links.append('<div id="' + Client.convertPathToASCII(file) + '"><a class="google-storage-link" target="_blank" href="' + files[file] + '">' + file + '</a><br></div>')
                         } else {
-                            $links.append('<div id="' + Client.convertPathToASCII(file) + '">' + file + '<br></div>')
+                            $links.append('<div id="' + Client.convertPathToASCII(file) + '"><div class="file-name" data-file-id="' + Client.convertPathToASCII(file) + '">' + file + '</div> <a  data-field-name="' + prop + '" data-file-id="' + Client.convertPathToASCII(file) + '" data-file-name="' + file + '" class="get-download-link btn btn-primary btn-sm" href="#">Get Download Link</a><br></div>')
                         }
                     }
                     $links.insertAfter($elem);
@@ -102,7 +101,7 @@ Client = {
                     if (files[path] != '') {
                         $("#" + Client.convertPathToASCII(path)).html('<a class="google-storage-link" target="_blank" href="' + files[path] + '">' + path + '</a><br>')
                     } else {
-                        $("#" + Client.convertPathToASCII(path)).html('' + path + '<br>')
+                        $("#" + Client.convertPathToASCII(path)).html('<div class="file-name" data-file-id="' + Client.convertPathToASCII(path) + '">' + path + '</div><a  data-field-name="' + prop + '" data-file-id="' + Client.convertPathToASCII(path) + '" data-file-name="' + path + '" class="get-download-link btn btn-primary btn-sm" href="#">Get Download Link</a><br>')
                     }
                 }
             }
@@ -112,6 +111,31 @@ Client = {
             }
 
         }
+    },
+    getDownloadSignedURL: function (field_name, file_name, id) {
+        $.ajax({
+            // Your server script to process the upload
+            url: Client.getSignedURLAjax,
+            type: 'GET',
+
+            // Form data
+            data: {
+                'file_name': file_name,
+                'field_name': field_name,
+                'action': 'download'
+            },
+            success: function (data) {
+                var response = JSON.parse(data)
+                if (response.status === 'success') {
+                    console.log($("#" + id))
+                    console.log($("#" + id).find('.file-name'))
+                    $("#" + id).html('<a target="_blank" href="' + response.link + '">' + file_name + '</a>')
+                }
+            },
+            error: function (request, error) {
+                alert("Request: " + JSON.stringify(request));
+            }
+        });
     },
     getSignedURL: function (type, name, field, file) {
         $.ajax({
@@ -126,7 +150,8 @@ Client = {
                 'field_name': field,
                 'record_id': Client.recordId,
                 'event_id': Client.eventId,
-                'instance_id': Client.instanceId
+                'instance_id': Client.instanceId,
+                'action': 'upload'
             },
             success: function (data) {
                 var response = JSON.parse(data)
