@@ -573,7 +573,7 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
     /**
      * @param bool $linksDisabled
      */
-    public function setLinksDisabled(bool $linksDisabled): void
+    public function setLinksDisabled($linksDisabled): void
     {
         $this->linksDisabled = $linksDisabled;
     }
