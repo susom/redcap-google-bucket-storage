@@ -69,8 +69,16 @@ Client = {
                 var response = JSON.parse(data)
                 if (response.status === 'success') {
                     Client.downloadLinks = response.links
-                    Client.processFields(path)
+                    Client.processFields(path);
+
+                    // change few parameter to let redcap save existing record
+                    record_exists = 1;
+                    $('input[name ="hidden_edit_flag"]').val(1);
+
                 }
+            },
+            complete: function () {
+                $(".btn-primaryrc").removeAttr('disabled')
             },
             error: function (request, error) {
                 alert("Request: " + JSON.stringify(request));
@@ -98,7 +106,7 @@ Client = {
                     // if path is defined this mean the function was called after upload is complete. then we need to replace only the progress bar that completed.
                 } else {
                     // if download links are disable
-                    if (files[path] != '') {
+                    if (files !== undefined && files[path] != '') {
                         $("#" + Client.convertPathToASCII(path)).html('<a class="google-storage-link" target="_blank" href="' + files[path] + '">' + path + '</a><br>')
                     } else {
                         $("#" + Client.convertPathToASCII(path)).html('<div class="file-name" data-file-id="' + Client.convertPathToASCII(path) + '">' + path + '</div><a  data-field-name="' + prop + '" data-file-id="' + Client.convertPathToASCII(path) + '" data-file-name="' + path + '" class="get-download-link btn btn-primary btn-sm" href="#">Get Download Link</a><br>')
