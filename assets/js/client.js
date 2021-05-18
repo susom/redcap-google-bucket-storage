@@ -10,6 +10,8 @@ Client = {
     form: [],
     fields: [],
     filesPath: {},
+    isSurvey: false,
+    isLinkDisabled: false,
     init: function () {
 
 
@@ -106,10 +108,15 @@ Client = {
                     // if path is defined this mean the function was called after upload is complete. then we need to replace only the progress bar that completed.
                 } else {
                     // if download links are disable
-                    if (files !== undefined && files[path] != '') {
+                    if ((files !== undefined && files[path] != '')) {
                         $("#" + Client.convertPathToASCII(path)).html('<a class="google-storage-link" target="_blank" href="' + files[path] + '">' + path + '</a><br>')
                     } else {
-                        $("#" + Client.convertPathToASCII(path)).html('<div class="file-name" data-file-id="' + Client.convertPathToASCII(path) + '">' + path + '</div><a  data-field-name="' + prop + '" data-file-id="' + Client.convertPathToASCII(path) + '" data-file-name="' + path + '" class="get-download-link btn btn-primary btn-sm" href="#">Get Download Link</a><br>')
+                        if (Client.isLinkDisabled) {
+                            $("#" + Client.convertPathToASCII(path)).html('<div class="file-name" data-file-id="' + Client.convertPathToASCII(path) + '">' + path + '</div><br>')
+
+                        } else {
+                            $("#" + Client.convertPathToASCII(path)).html('<div class="file-name" data-file-id="' + Client.convertPathToASCII(path) + '">' + path + '</div><a  data-field-name="' + prop + '" data-file-id="' + Client.convertPathToASCII(path) + '" data-file-name="' + path + '" class="get-download-link btn btn-primary btn-sm" href="#">Get Download Link</a><br>')
+                        }
                     }
                 }
             }
@@ -219,7 +226,14 @@ Client = {
                     }
                     // make sure to set the value in case user clicked default save button .
                     jQuery("input[name=" + field + "]").val(Client.filesPath[field]);
-                    Client.saveRecord(path);
+
+                    // do not save for surveys
+                    if (Client.isSurvey === false) {
+                        Client.saveRecord(path);
+                    } else {
+                        Client.processFields(path);
+                    }
+
                 }
 
             },

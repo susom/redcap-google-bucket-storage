@@ -25,6 +25,7 @@ use Google\Cloud\Storage\Bucket;
  * @property int $eventId
  * @property int $instanceId
  * @property bool $linksDisabled
+ * @property bool $isSurvey
  */
 class GoogleStorage extends \ExternalModules\AbstractExternalModule
 {
@@ -67,6 +68,7 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
 
     private $linksDisabled;
 
+    private $isSurvey;
     public function __construct()
     {
         try {
@@ -212,26 +214,33 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
 
     public function redcap_every_page_top()
     {
-        // in case we are loading record homepage load its the record children if existed
-        if ((strpos($_SERVER['SCRIPT_NAME'], 'DataEntry/index.php') !== false || !preg_match("\/surveys\/\?s=[a-zA-Z0-9]{10}", $_SERVER['REQUEST_URI'])) && $this->getFields()) {
+        try {
+            $this->setIsSurvey(preg_match("/surveys\/\?s=[a-zA-Z0-9]{10}/m", $_SERVER['REQUEST_URI']));
+            // in case we are loading record homepage load its the record children if existed
+            if ((strpos($_SERVER['SCRIPT_NAME'], 'DataEntry/index.php') !== false || $this->isSurvey()) && $this->getFields()) {
+
+                if (isset($_GET['event_id'])) {
+                    $this->setEventId(filter_var($_GET['event_id'], FILTER_SANITIZE_NUMBER_INT));
+                } else {
+                    $this->setEventId($this->getFirstEventId());
+                }
+
+                if (isset($_GET['instance'])) {
+                    $this->setInstanceId(filter_var($_GET['instance'], FILTER_SANITIZE_NUMBER_INT));
+                }
+
+                // do not set the record for surveys
+                if (isset($_GET['id']) && !$this->isSurvey()) {
+                    $this->setRecordId(filter_var($_GET['id'], FILTER_SANITIZE_STRING));
+                    $this->setRecord();
+                    $this->prepareDownloadLinks();
+                }
 
 
-            if (isset($_GET['id'])) {
-                $this->setRecordId(filter_var($_GET['id'], FILTER_SANITIZE_STRING));
+                $this->includeFile("src/client.php");
             }
-
-            if (isset($_GET['event_id'])) {
-                $this->setEventId(filter_var($_GET['event_id'], FILTER_SANITIZE_NUMBER_INT));
-            } else {
-                $this->setEventId($this->getFirstEventId());
-            }
-
-            if (isset($_GET['instance'])) {
-                $this->setInstanceId(filter_var($_GET['instance'], FILTER_SANITIZE_NUMBER_INT));
-            }
-            $this->setRecord();
-            $this->prepareDownloadLinks();
-            $this->includeFile("src/client.php");
+        } catch (\Exception $e) {
+            echo $e->getMessage();
         }
 
     }
@@ -275,11 +284,11 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
                     $files = $this->getPrefixObjects($bucket, $prefix);
                     foreach ($files as $file) {
                         $links[$field][$file] = '';
-//                        if ($this->isLinksDisabled()) {
-//                            $links[$field][$file] = '';
-//                        } else {
-//                            $links[$field][$file] = $this->getGoogleStorageSignedUrl($bucket, trim($file));
-//                        }
+                        if ($this->isLinksDisabled()) {
+                            $links[$field][$file] = '';
+                        } else {
+                            $links[$field][$file] = $this->getGoogleStorageSignedUrl($bucket, trim($file));
+                        }
 
                         if (isset($filesPath[$field])) {
                             $filesPath[$field] .= ',' . $file;
@@ -549,7 +558,7 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
     /**
      * @return array
      */
-    public function getFilesPath(): array
+    public function getFilesPath()
     {
         return $this->filesPath;
     }
@@ -577,5 +586,22 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
     {
         $this->linksDisabled = $linksDisabled;
     }
+
+    /**
+     * @return bool
+     */
+    public function isSurvey(): bool
+    {
+        return $this->isSurvey;
+    }
+
+    /**
+     * @param bool $isSurvey
+     */
+    public function setIsSurvey(bool $isSurvey): void
+    {
+        $this->isSurvey = $isSurvey;
+    }
+
 
 }
