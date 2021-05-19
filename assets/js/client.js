@@ -98,11 +98,17 @@ Client = {
                     var $links = $('<div id="' + prop + '-links"></div>')
                     for (var file in files) {
                         // if download links are disable
-                        if (files[file] != '') {
-                            $links.append('<div id="' + Client.convertPathToASCII(file) + '"><a class="google-storage-link" target="_blank" href="' + files[file] + '">' + file + '</a><br></div>')
+                        // if (files[file] != '') {
+                        //     $links.append('<div id="' + Client.convertPathToASCII(file) + '"><a class="google-storage-link" target="_blank" href="' + files[file] + '">' + file + '</a><br></div>')
+                        // } else {
+                        //     $links.append('<div id="' + Client.convertPathToASCII(file) + '"><div class="file-name" data-file-id="' + Client.convertPathToASCII(file) + '">' + file + '</div> <a  data-field-name="' + prop + '" data-file-id="' + Client.convertPathToASCII(file) + '" data-file-name="' + file + '" class="get-download-link btn btn-primary btn-sm" href="#">Get Download Link</a><br></div>')
+                        // }
+                        if (Client.isLinkDisabled) {
+                            $links.append('<div id="' + Client.convertPathToASCII(file) + '"><div class="file-name" data-file-id="' + Client.convertPathToASCII(file) + '">' + file + '</div></div>')
                         } else {
                             $links.append('<div id="' + Client.convertPathToASCII(file) + '"><div class="file-name" data-file-id="' + Client.convertPathToASCII(file) + '">' + file + '</div> <a  data-field-name="' + prop + '" data-file-id="' + Client.convertPathToASCII(file) + '" data-file-name="' + file + '" class="get-download-link btn btn-primary btn-sm" href="#">Get Download Link</a><br></div>')
                         }
+
                     }
                     $links.insertAfter($elem);
                     // if path is defined this mean the function was called after upload is complete. then we need to replace only the progress bar that completed.
@@ -113,7 +119,6 @@ Client = {
                     } else {
                         if (Client.isLinkDisabled) {
                             $("#" + Client.convertPathToASCII(path)).html('<div class="file-name" data-file-id="' + Client.convertPathToASCII(path) + '">' + path + '</div><br>')
-
                         } else {
                             $("#" + Client.convertPathToASCII(path)).html('<div class="file-name" data-file-id="' + Client.convertPathToASCII(path) + '">' + path + '</div><a  data-field-name="' + prop + '" data-file-id="' + Client.convertPathToASCII(path) + '" data-file-name="' + path + '" class="get-download-link btn btn-primary btn-sm" href="#">Get Download Link</a><br>')
                         }
@@ -142,8 +147,6 @@ Client = {
             success: function (data) {
                 var response = JSON.parse(data)
                 if (response.status === 'success') {
-                    console.log($("#" + id))
-                    console.log($("#" + id).find('.file-name'))
                     $("#" + id).html('<a target="_blank" href="' + response.link + '">' + file_name + '</a>')
                 }
             },
