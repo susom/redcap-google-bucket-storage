@@ -14,7 +14,7 @@ Client = {
     isLinkDisabled: false,
     init: function () {
 
-
+     // test builder
         Client.removeAutoParam()
         // with ajax disable all submit buttons till ajax is completed
         jQuery(document).on({
