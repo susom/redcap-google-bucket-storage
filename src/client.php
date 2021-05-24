@@ -14,7 +14,8 @@ $this->emLog('inside src/client.php');
     Client.recordId = "<?php echo $this->getRecordId() ?: '' ?>"
     Client.eventId = "<?php echo $this->getEventId() ?>"
     Client.instanceId = "<?php echo $this->getInstanceId() ?>"
-    Client.isSurvey = "<?php echo $this->isSurvey() ?>"
+    Client.isSurvey = "<?php echo $this->isSurvey() ? true : false ?>"
+    Client.isAutoSaveDisabled = "<?php echo $this->isAutoSaveDisabled() ? true : false ?>"
     Client.isLinkDisabled = "<?php echo $this->isLinksDisabled() ?>"
     window.onload = setTimeout(function () {
         Client.init();

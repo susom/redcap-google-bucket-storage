@@ -12,9 +12,10 @@ Client = {
     filesPath: {},
     isSurvey: false,
     isLinkDisabled: false,
+    isAutoSaveDisabled: false,
     init: function () {
 
-     // test builder
+        // test builder
         Client.removeAutoParam()
         // with ajax disable all submit buttons till ajax is completed
         jQuery(document).on({
@@ -130,6 +131,9 @@ Client = {
                 $('<form class="google-storage-form" enctype="multipart/form-data"><input multiple class="google-storage-field" name="file" data-field="' + prop + '" type="file"/></form>').insertAfter($elem)
             }
 
+            if (path !== undefined) {
+                alert('File ' + path + ' was uploaded successfully!')
+            }
         }
     },
     getDownloadSignedURL: function (field_name, file_name, id) {
@@ -231,7 +235,7 @@ Client = {
                     jQuery("input[name=" + field + "]").val(Client.filesPath[field]);
 
                     // do not save for surveys
-                    if (Client.isSurvey === false) {
+                    if (Client.isAutoSaveDisabled == false) {
                         Client.saveRecord(path);
                     } else {
                         Client.processFields(path);

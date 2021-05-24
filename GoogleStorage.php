@@ -26,6 +26,7 @@ use Google\Cloud\Storage\Bucket;
  * @property int $instanceId
  * @property bool $linksDisabled
  * @property bool $isSurvey
+ * @property bool $autoSaveDisabled
  */
 class GoogleStorage extends \ExternalModules\AbstractExternalModule
 {
@@ -69,6 +70,9 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
     private $linksDisabled;
 
     private $isSurvey;
+
+    private $autoSaveDisabled;
+
     public function __construct()
     {
         try {
@@ -96,8 +100,20 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
                     $this->setBucketPrefix($prefix);
                 }
 
-                // lastly set flag to display uploaded file download links
-                $this->setLinksDisabled($this->getProjectSetting('disable-file-link'));
+                // set flag to display uploaded file download links
+                if (!is_null($this->getProjectSetting('disable-file-link'))) {
+                    $this->setLinksDisabled($this->getProjectSetting('disable-file-link'));
+
+                } else {
+                    $this->setLinksDisabled(false);
+                }
+
+                // set if we want auto save when file is uploaded.
+                if (!is_null($this->getProjectSetting('disable-auto-save'))) {
+                    $this->setAutoSaveDisabled($this->getProjectSetting('disable-auto-save'));
+                } else {
+                    $this->setAutoSaveDisabled(false);
+                }
             }
         } catch (\Exception $e) {
             #echo $e->getMessage();
@@ -230,7 +246,7 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
                 }
 
                 // do not set the record for surveys
-                if (isset($_GET['id']) && !$this->isSurvey()) {
+                if (isset($_GET['id'])) {
                     $this->setRecordId(filter_var($_GET['id'], FILTER_SANITIZE_STRING));
                     $this->setRecord();
                     $this->prepareDownloadLinks();
@@ -284,12 +300,11 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
                     $files = $this->getPrefixObjects($bucket, $prefix);
                     foreach ($files as $file) {
                         $links[$field][$file] = '';
-                        if ($this->isLinksDisabled()) {
-                            $links[$field][$file] = '';
-                        } else {
-                            $links[$field][$file] = $this->getGoogleStorageSignedUrl($bucket, trim($file));
-                        }
-
+//                        if ($this->isLinksDisabled()) {
+                        $links[$field][$file] = '';
+//                        } else {
+//                            $links[$field][$file] = $this->getGoogleStorageSignedUrl($bucket, trim($file));
+//                        }
                         if (isset($filesPath[$field])) {
                             $filesPath[$field] .= ',' . $file;
                         } else {
@@ -598,9 +613,25 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
     /**
      * @param bool $isSurvey
      */
-    public function setIsSurvey(bool $isSurvey): void
+    public function setIsSurvey($isSurvey): void
     {
         $this->isSurvey = $isSurvey;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAutoSaveDisabled(): bool
+    {
+        return $this->autoSaveDisabled;
+    }
+
+    /**
+     * @param bool $autoSaveDisabled
+     */
+    public function setAutoSaveDisabled($autoSaveDisabled): void
+    {
+        $this->autoSaveDisabled = $autoSaveDisabled;
     }
 
 

@@ -84,6 +84,12 @@
       "type": "checkbox"
     },
     {
+      "key": "disable-auto-save",
+      "name": "<b>Prevent Auto-Save when file is uploaded.</b>",
+      "required": false,
+      "type": "checkbox"
+    },
+    {
       "key": "enable-project-debug-logging",
       "name": "<b>Enable Debug Logging</b>",
       "required": false,
