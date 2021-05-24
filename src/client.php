@@ -4,6 +4,12 @@ namespace Stanford\GoogleStorage;
 
 $this->emLog('inside src/client.php');
 ?>
+<!-- Warning dialog -->
+<div id="upload-dialog" style="top: 10% !important; display: none"
+     title="Upload Complete">File <strong id="uploaded-file-name"></strong> uploaded successfully
+</div>
+<!-- END Warning dialog -->
+
 <script src="<?php echo $this->getUrl('assets/js/client.js') ?>"></script>
 <script>
     Client.fields = <?php echo json_encode($this->getFields()); ?>;

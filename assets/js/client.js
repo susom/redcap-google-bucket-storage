@@ -132,9 +132,23 @@ Client = {
             }
 
             if (path !== undefined) {
-                alert('File ' + path + ' was uploaded successfully!')
+                Client.uploadDialog(path)
             }
         }
+    },
+    uploadDialog: function (path) {
+        $("#uploaded-file-name").text(path);
+        $('#upload-dialog').dialog({
+            bgiframe: true, modal: true, width: 400, position: ['center', 20],
+            open: function () {
+                fitDialog(this);
+            },
+            buttons: {
+                Close: function () {
+                    $(this).dialog('close');
+                }
+            }
+        });
     },
     getDownloadSignedURL: function (field_name, file_name, id) {
         $.ajax({
