@@ -37,6 +37,24 @@
   ],
   "system-settings": [
     {
+      "key": "google-api-token",
+      "name": "<h5>Google Storage API Service Account. This will be used to any Google project using this EM. Researcher must give `Storage Admin` permission to defined SA. </h5>",
+      "required": true,
+      "type": "textarea"
+    },
+    {
+      "key": "rit-intermediate-project-id",
+      "name": "<h5>RIT intermediate Google Project ID</h5>",
+      "required": true,
+      "type": "text"
+    },
+    {
+      "key": "rit-intermediate-bucket",
+      "name": "<h5>RIT intermediate bucket</h5>",
+      "required": true,
+      "type": "text"
+    },
+    {
       "key": "enable-system-debug-logging",
       "name": "<b>Enable Debug Logging</b><br>If you have the Stanford emLogger external module installed and configured, you can enable additional debug-level logging through this checkbox</b>",
       "required": false,
@@ -49,12 +67,6 @@
       "name": "<h5>Google Storage Project ID</h5>",
       "required": true,
       "type": "text"
-    },
-    {
-      "key": "google-api-token",
-      "name": "<h5>Google Storage API Service Account</h5>",
-      "required": true,
-      "type": "textarea"
     },
     {
       "key": "instance",

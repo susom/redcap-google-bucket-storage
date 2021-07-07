@@ -13,7 +13,9 @@ use Google\Cloud\Storage\Bucket;
  * Class GoogleStorage
  * @package Stanford\GoogleStorage
  * @property \Google\Cloud\Storage\StorageClient $client
+ * @property \Google\Cloud\Storage\StorageClient $neroClient
  * @property \Google\Cloud\Storage\Bucket[] $buckets
+ * @property \Google\Cloud\Storage\Bucket $ritIntermediateBucket
  * @property array $instances
  * @property array $fields
  * @property array $record
@@ -35,6 +37,7 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
 
 
     /**
+     * this client will be used by user to access intermediate RIT bucket and project.
      * @var \Google\Cloud\Storage\StorageClient
      */
     private $client;
@@ -73,12 +76,21 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
 
     private $autoSaveDisabled;
 
+    private $ritIntermediateBucket;
+
+    /**
+     * this client will be used to access Nero via REDCap server. user wont have access to this Client.
+     * @var
+     */
+    private $neroClient;
+
+
     public function __construct()
     {
         try {
             parent::__construct();
 
-            if (isset($_GET['pid']) && $this->getProjectSetting('google-api-token') != '' && $this->getProjectSetting('google-project-id') != '') {
+            if (isset($_GET['pid']) && $this->getSystemSetting('google-api-token') != '' && $this->getProjectSetting('google-project-id') != '') {
                 $this->setInstances();
 
                 global $Proj;
@@ -86,19 +98,26 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
                 $this->setProject($Proj);
 
                 $this->prepareGoogleStorageFields();
-                //configure google storage object
-                $this->setClient(new StorageClient(['keyFile' => json_decode($this->getProjectSetting('google-api-token'), true), 'projectId' => $this->getProjectSetting('google-project-id')]));
+                //RIT intermediate client.
+                $this->setClient(new StorageClient(['keyFile' => json_decode($this->getSystemSetting('google-api-token'), true), 'projectId' => $this->getSystemSetting('rit-intermediate-project-id')]));
+
+
+                //Nero Client. will be used by redcap only. we are defining the client based on user Google project. SA defined in settings config must have Storage admin permission enabled in project defined by user.
+                $this->setNeroClient(new StorageClient(['keyFile' => json_decode($this->getSystemSetting('google-api-token'), true), 'projectId' => $this->getProjectSetting('google-project-id')]));
 
                 if (!empty($this->getInstances())) {
                     $buckets = array();
                     $prefix = array();
                     foreach ($this->getInstances() as $instance) {
-                        $buckets[$instance['google-storage-bucket']] = $this->getClient()->bucket($instance['google-storage-bucket']);
+                        $buckets[$instance['google-storage-bucket']] = $this->getNeroClient()->bucket($instance['google-storage-bucket']);
                         $prefix[$instance['google-storage-bucket']] = $instance['google-storage-bucket-prefix'];
                     }
                     $this->setBuckets($buckets);
                     $this->setBucketPrefix($prefix);
                 }
+
+                // now defined RIT intermediate bucket.
+                $this->setRitIntermediateBucket($this->getClient()->bucket($this->getSystemSetting('rit-intermediate-bucket')));
 
                 // set flag to display uploaded file download links
                 if (!is_null($this->getProjectSetting('disable-file-link'))) {
@@ -151,6 +170,17 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
         }
     }
 
+    private function copyObjectToNeroBucket()
+    {
+        $currentField = filter_var($_POST['current_field'], FILTER_SANITIZE_STRING);
+        $destinationBucket = $this->getBucketName($currentField);
+
+        $objectName = filter_var($_POST['current_path'], FILTER_SANITIZE_STRING);
+        $bucket = $this->getRitIntermediateBucket();
+        $object = $bucket->object($objectName);
+        $object->copy($destinationBucket);
+        $object->delete();
+    }
 
     public function saveRecord()
     {
@@ -161,6 +191,8 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
             $data[$field] = $item;
             $form = $this->getFieldInstrument($field);
         }
+
+
         $this->setEventId(filter_var($_POST['event_id'], FILTER_SANITIZE_NUMBER_INT));
         $data['redcap_event_name'] = $this->getProject()->getUniqueEventNames($this->getEventId());
         if ($this->getProject()->isRepeatingForm($this->getEventId(), $form)) {
@@ -170,6 +202,7 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
 
         $response = \REDCap::saveData($this->getProjectId(), 'json', json_encode(array($data)));
         if (empty($response['errors'])) {
+            $this->copyObjectToNeroBucket();
             $this->setRecord();
             $this->prepareDownloadLinks();
             $this->uploadLogFile(USERID, $this->getRecordId(), $data['redcap_event_name'], $field, $filesPath);
@@ -390,6 +423,11 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
     {
         $bucketName = $this->getFields()[$fieldName];
         return $this->getBuckets()[$bucketName];
+    }
+
+    public function getBucketName($fieldName)
+    {
+        return $this->getFields()[$fieldName];
     }
 
     /**
@@ -632,6 +670,38 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
     public function setAutoSaveDisabled($autoSaveDisabled): void
     {
         $this->autoSaveDisabled = $autoSaveDisabled;
+    }
+
+    /**
+     * @return Bucket
+     */
+    public function getRitIntermediateBucket(): Bucket
+    {
+        return $this->ritIntermediateBucket;
+    }
+
+    /**
+     * @param Bucket $ritIntermediateBucket
+     */
+    public function setRitIntermediateBucket(Bucket $ritIntermediateBucket): void
+    {
+        $this->ritIntermediateBucket = $ritIntermediateBucket;
+    }
+
+    /**
+     * @return StorageClient
+     */
+    public function getNeroClient(): StorageClient
+    {
+        return $this->neroClient;
+    }
+
+    /**
+     * @param StorageClient $neroClient
+     */
+    public function setNeroClient(StorageClient $neroClient): void
+    {
+        $this->neroClient = $neroClient;
     }
 
 

@@ -55,7 +55,7 @@ Client = {
         window.history.pushState({path: temp}, '', temp);
 
     },
-    saveRecord: function (path) {
+    saveRecord: function (path, field) {
         $.ajax({
             // Your server script to process the upload
             url: Client.saveRecordURLAjax,
@@ -66,7 +66,9 @@ Client = {
                 'record_id': Client.recordId,
                 'event_id': Client.eventId,
                 'instance_id': Client.instanceId,
-                'files_path': JSON.stringify(Client.filesPath)
+                'files_path': JSON.stringify(Client.filesPath),
+                'current_path': path,
+                'current_field': field !== undefined ? field : ''
             },
             success: function (data) {
                 var response = JSON.parse(data)
@@ -250,7 +252,7 @@ Client = {
 
                     // do not save for surveys
                     if (Client.isAutoSaveDisabled == false) {
-                        Client.saveRecord(path);
+                        Client.saveRecord(path, field);
                     } else {
                         Client.processFields(path);
                     }

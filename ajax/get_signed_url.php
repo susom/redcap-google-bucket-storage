@@ -11,7 +11,10 @@ try {
         $recordId = filter_var($_GET['record_id'], FILTER_SANITIZE_STRING);
         $eventId = filter_var($_GET['event_id'], FILTER_SANITIZE_NUMBER_INT);
         $instanceId = filter_var($_GET['instance_id'], FILTER_SANITIZE_NUMBER_INT);
-        $bucket = $module->getBucket($fieldName);
+
+        #$bucket = $module->getBucket($fieldName);
+        $bucket = $module->getRitIntermediateBucket();
+
         $prefix = $module->getFieldBucketPrefix($fieldName);
         $path = $module->buildUploadPath($prefix, $fieldName, $fileName, $recordId, $eventId, $instanceId);
         $response = $module->getGoogleStorageSignedUploadUrl($bucket, $path, $contentType);
