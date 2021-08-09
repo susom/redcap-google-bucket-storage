@@ -1,10 +1,5 @@
 {
-  "require": {
-    "google/cloud-storage": "^1.23"
-  },
-  "config": {
-    "platform": {
-      "php": "7.0.3"
+    "require": {
+        "guzzlehttp/guzzle": "^7.0"
     }
-  }
 }

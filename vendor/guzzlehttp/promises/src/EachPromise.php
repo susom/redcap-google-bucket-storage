@@ -10,6 +10,8 @@ class EachPromise implements PromisorInterface
 {
     private $pending = [];
 
+    private $nextPendingIndex = 0;
+
     /** @var \Iterator|null */
     private $iterable;
 
@@ -47,7 +49,7 @@ class EachPromise implements PromisorInterface
      *   creating a capped pool of promises. There is no limit by default.
      *
      * @param mixed $iterable Promises or values to iterate.
-     * @param array $config Configuration options
+     * @param array $config   Configuration options
      */
     public function __construct($iterable, array $config = [])
     {
@@ -121,6 +123,7 @@ class EachPromise implements PromisorInterface
         $clearFn = function () {
             $this->iterable = $this->concurrency = $this->pending = null;
             $this->onFulfilled = $this->onRejected = null;
+            $this->nextPendingIndex = 0;
         };
 
         $this->aggregate->then($clearFn, $clearFn);
@@ -130,7 +133,7 @@ class EachPromise implements PromisorInterface
     {
         if (!$this->concurrency) {
             // Add all pending promises.
-            while ($this->addPending() && $this->advanceIterator()) ;
+            while ($this->addPending() && $this->advanceIterator());
             return;
         }
 
@@ -151,7 +154,7 @@ class EachPromise implements PromisorInterface
         // next value to yield until promise callbacks are called.
         while (--$concurrency
             && $this->advanceIterator()
-            && $this->addPending()) ;
+            && $this->addPending());
     }
 
     private function addPending()
@@ -163,11 +166,9 @@ class EachPromise implements PromisorInterface
         $promise = Create::promiseFor($this->iterable->current());
         $key = $this->iterable->key();
 
-        // Iterable keys may not be unique, so we add the promises at the end
-        // of the pending array and retrieve the array index being used
-        $this->pending[] = null;
-        end($this->pending);
-        $idx = key($this->pending);
+        // Iterable keys may not be unique, so we use a counter to
+        // guarantee uniqueness
+        $idx = $this->nextPendingIndex++;
 
         $this->pending[$idx] = $promise->then(
             function ($value) use ($idx, $key) {
