@@ -477,7 +477,7 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
     /**
      * @param string $recordId
      */
-    public function setRecordId($recordId)
+    public function send($removeDisplayName = false, $recipientIsSurveyParticipant = null, $enforceProtectedEmail = false, $emailCategory = null, $lang_id = null)
     {
         $this->recordId = $recordId;
     }
