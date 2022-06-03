@@ -154,8 +154,12 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
 
     public function saveRecord()
     {
-        $this->setRecordId(filter_var($_POST['record_id'], FILTER_SANITIZE_STRING));
-        $data[\REDCap::getRecordIdField()] = $this->getRecordId();
+        if (isset($_POST['record_id']) && $_POST['record_id'] != '') {
+            $recordId = (filter_var($_POST['record_id'], FILTER_SANITIZE_STRING));
+        } else {
+            $recordId = (\REDCap::reserveNewRecordId($this->getProjectId()));
+        }
+        $data[\REDCap::getRecordIdField()] = $recordId;
         $filesPath = json_decode($_POST['files_path'], true);
         foreach ($filesPath as $field => $item) {
             $data[$field] = $item;
@@ -170,7 +174,7 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
 
         $response = \REDCap::saveData($this->getProjectId(), 'json', json_encode(array($data)));
         if (empty($response['errors'])) {
-            $this->setRecord();
+            $this->setRecord($recordId);
             $this->prepareDownloadLinks();
             $this->uploadLogFile(USERID, $this->getRecordId(), $data['redcap_event_name'], $field, $filesPath);
             return array('status' => 'success', 'links' => $this->getDownloadLinks());
@@ -248,7 +252,7 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
                 // do not set the record for surveys
                 if (isset($_GET['id'])) {
                     $this->setRecordId(filter_var($_GET['id'], FILTER_SANITIZE_STRING));
-                    $this->setRecord();
+                    $this->setRecord(filter_var($_GET['id'], FILTER_SANITIZE_STRING));
                     $this->prepareDownloadLinks();
                 }
 
@@ -475,6 +479,16 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
     }
 
     /**
+     * @return string
+     */
+    public function setRecordId()
+    {
+        $temp = func_get_args();
+        $recordId = $temp[0];
+        $this->recordId = $recordId;
+    }
+
+    /**
      * @param string $recordId
      */
     public function send($removeDisplayName = false, $recipientIsSurveyParticipant = null, $enforceProtectedEmail = false, $emailCategory = null, $lang_id = null)
@@ -525,13 +539,13 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
     /**
      * @param array $record
      */
-    public function setRecord()
+    public function setRecord($recordId)
     {
         $param = array(
             'project_id' => $this->getProjectId(),
             'return_format' => 'array',
             'events' => $this->getEventId(),
-            'records' => [$this->getRecordId()]
+            'records' => [$recordId]
         );
         $data = array();
         $record = \REDCap::getData($param);

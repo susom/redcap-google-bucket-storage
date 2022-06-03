@@ -128,7 +128,7 @@ Client = {
             }
             // only add form in the first time.
             if (path === undefined) {
-                $('<form class="google-storage-form" enctype="multipart/form-data"><input multiple class="google-storage-field" name="file" data-field="' + prop + '" type="file"/></form>').insertAfter($elem)
+                $('<form class="google-storage-form" enctype="multipart/form-data"><input multiple class="google-storage-field" data-field="' + prop + '" type="file"/></form>').insertAfter($elem)
             }
 
             if (path !== undefined) {
