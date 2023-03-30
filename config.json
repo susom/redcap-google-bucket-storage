@@ -46,32 +46,38 @@
   "project-settings": [
     {
       "key": "google-project-id",
-      "name": "<h5>Google Storage Project ID</h5>",
+      "name": "<b>Google Storage Project ID</b><br><i>e.g. som-rit-phi-study-name",
       "required": true,
       "type": "text"
     },
     {
       "key": "google-api-token",
-      "name": "<h5>Google Storage API Service Account</h5>",
+      "name": "<b>Google Storage Service Account JSON Key contents</b><br>Copy and paste the entire contents (as JSON text) of the key file, e.g. som-rit-phi-study-name-xyz123.json",
       "required": true,
       "type": "textarea"
     },
     {
+      "key": "instance-description",
+      "name": "<b>Bucket Setup</b><br>You must specify one (or more) buckets below files will be stored in the project above.  In the bucket, each file will be saved in nested folders that correspond to:<br><code> {prefix}RECORD_ID/FIELD_NAME/EVENT_NAME/INSTANCE/FILE_NAME(s)</code> where EVENT_NAME and INSTANCE are only added if needed.",
+      "required": false,
+      "type": "descriptive"
+    },
+    {
       "key": "instance",
-      "name": "<b>Google Bucket Storage Instances</b>",
+      "name": "Specify Bucket Details",
       "required": true,
       "type": "sub_settings",
       "repeatable": true,
       "sub_settings": [
         {
           "key": "google-storage-bucket",
-          "name": "<h5>Google Storage Bucket that will be used to save data</h5>",
+          "name": "<b>Google Storage Bucket Name</b><br><i>e.g. my-unique-bucket-name-pid-12345</i>",
           "required": true,
           "type": "text"
         },
         {
           "key": "google-storage-bucket-prefix",
-          "name": "<h5>You can specify a prefix for all files in your bucket (Optional).</h5>",
+          "name": "<b>Record Name Prefix</b><br><i>(optional)</i> If specified, this will be prefixed before the record_id.  This <u>does not</u> nest the record id into a subfolder",
           "required": false,
           "type": "text"
         }
