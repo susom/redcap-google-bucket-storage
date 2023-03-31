@@ -302,13 +302,15 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
                 $temp = $record[$this->getRecordId()][$this->getEventId()][$field];
             }
             if ($temp != '') {
-                $files = explode(",", $temp);
+                $filesREDCap = explode(",", $temp);
                 $bucket = $this->getBucket($field);
 
                 if (!empty($field)) {
                     // check if files still exist in bucket.
-                    $prefix = $this->getFullPrefix($files[0]);
-                    $files = $this->getPrefixObjects($bucket, $prefix);
+                    $prefix = $this->getFullPrefix($filesREDCap[0]);
+                    $GCPFiles = $this->getPrefixObjects($bucket, $prefix);
+                    // repeat_instances use case pull file for current instance.
+                    $files = array_intersect($filesREDCap, $GCPFiles);
                     foreach ($files as $file) {
                         $links[$field][$file] = '';
 //                        if ($this->isLinksDisabled()) {
