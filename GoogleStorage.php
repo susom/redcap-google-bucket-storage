@@ -8,6 +8,7 @@ require __DIR__ . '/vendor/autoload.php';
 # Imports the Google Cloud client library
 use Google\Cloud\Storage\StorageClient;
 use Google\Cloud\Storage\Bucket;
+use function Amp\Iterator\filter;
 
 /**
  * Class GoogleStorage
@@ -294,8 +295,14 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
         $links = array();
         $filesPath = array();
         foreach ($this->getFields() as $field => $bucket) {
-            if ($record[$this->getRecordId()][$this->getEventId()][$field] != '') {
-                $files = explode(",", $record[$this->getRecordId()][$this->getEventId()][$field]);
+            if ($this->getProject()->isRepeatingForm($this->getEventId(), $field)) {
+                $instance = isset($_GET['instance']) ? filter_var($_GET['instance'], FILTER_SANITIZE_NUMBER_INT) : filter_var($_POST['instance_id'], FILTER_SANITIZE_NUMBER_INT);
+                $temp = $record[$this->getRecordId()]['repeat_instances'][$this->getEventId()][$field][$instance][$field];
+            } else {
+                $temp = $record[$this->getRecordId()][$this->getEventId()][$field];
+            }
+            if ($temp != '') {
+                $files = explode(",", $temp);
                 $bucket = $this->getBucket($field);
 
                 if (!empty($field)) {
