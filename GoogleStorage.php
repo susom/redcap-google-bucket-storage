@@ -3,7 +3,7 @@
 namespace Stanford\GoogleStorage;
 
 require_once "emLoggerTrait.php";
-require __DIR__ . '/vendor/autoload.php';
+#require __DIR__ . '/vendor/autoload.php';
 
 # Imports the Google Cloud client library
 use Google\Cloud\Storage\StorageClient;
