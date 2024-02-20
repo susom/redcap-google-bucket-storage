@@ -33,11 +33,11 @@ happening directly from user client to bucket with no REDCap as middleware.
  -- Ensure you are in your google project
  gcloud config set project YOUR-GCP-PROJECT-NAME
  -- View your current cors settings (should be null)
- gcloud storage buckets describe gs://YOUR-BUCKET-NAME --format="default(cors)"
+ gcloud storage buckets describe gs://YOUR-BUCKET-NAME --format="default(cors_config)"
  -- Now, update the CORS settings
- gsutil cors set my_bucket_cors.json gs://YOUR-BUCKET-NAME
+ gcloud storage buckets update gs://YOUR-BUCKET-NAME --cors-file=PATH_TO_CORS_JSON_FILE
  -- Now, verify the cors settings took:
- gcloud storage buckets describe gs://YOUR-BUCKET-NAME --format="default(cors)"
+ gcloud storage buckets describe gs://YOUR-BUCKET-NAME --format="default(cors_config)"
  ```
  8. Configure the REDCap EM by following the standard EM configuration instructions
  
