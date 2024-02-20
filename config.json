@@ -14,9 +14,7 @@
       "institution": "Stanford Health Care"
     }
   ],
-  "permissions": [
-    "redcap_every_page_top"
-  ],
+  "framework-version": 12,
   "links": {
     "control-center": [
     ],
