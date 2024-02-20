@@ -13,6 +13,38 @@ Client = {
     isSurvey: false,
     isLinkDisabled: false,
     isAutoSaveDisabled: false,
+    decode_object: function (obj) {
+        try {
+            // parse text to json object
+            var parsedObj = obj;
+            if (typeof obj === 'string') {
+                var temp = obj.replace(/&quot;/g, '"').replace(/[\n\r\t\s]+/g, ' ')
+                parsedObj = JSON.parse(temp);
+            }
+
+            for (key in parsedObj) {
+                if (typeof parsedObj[key] === 'object') {
+                    parsedObj[key] = Client.decode_object(parsedObj[key])
+                } else {
+                    // ignore boolean because changing them to string will cause error.
+                    if (typeof parsedObj[key] != 'boolean') {
+                        parsedObj[key] = Client.decode_string(parsedObj[key])
+                    }
+                }
+            }
+            return parsedObj
+        } catch (error) {
+            console.error(error);
+            alert(error)
+            // expected output: ReferenceError: nonExistentFunction is not defined
+            // Note - error messages will vary depending on browser
+        }
+    },
+    decode_string: function (input) {
+        var txt = document.createElement("textarea");
+        txt.innerHTML = input;
+        return txt.value;
+    },
     init: function () {
 
         // test builder
@@ -68,8 +100,8 @@ Client = {
                 'instance_id': Client.instanceId,
                 'files_path': JSON.stringify(Client.filesPath)
             },
-            success: function (data) {
-                var response = JSON.parse(data)
+            success: function (temp) {
+                var response = Client.decode_object(temp)
                 if (response.status === 'success') {
                     Client.downloadLinks = response.links
                     Client.processFields(path);
@@ -162,8 +194,8 @@ Client = {
                 'field_name': field_name,
                 'action': 'download'
             },
-            success: function (data) {
-                var response = JSON.parse(data)
+            success: function (temp) {
+                var response = Client.decode_object(temp)
                 if (response.status === 'success') {
                     $("#" + id).html('<a target="_blank" href="' + response.link + '">' + file_name + '</a>')
                 }
@@ -189,8 +221,8 @@ Client = {
                 'instance_id': Client.instanceId,
                 'action': 'upload'
             },
-            success: function (data) {
-                var response = JSON.parse(data)
+            success: function (temp) {
+                var response = Client.decode_object(temp)
                 if (response.status === 'success') {
                     Client.uploadFile(response.url, type, file, response.path, field)
                 }

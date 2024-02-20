@@ -74,52 +74,6 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
 
     private $autoSaveDisabled;
 
-    public function __construct()
-    {
-        try {
-            parent::__construct();
-
-            if (isset($_GET['pid']) && $this->getProjectSetting('google-api-token') != '' && $this->getProjectSetting('google-project-id') != '') {
-                $this->setInstances();
-
-                global $Proj;
-
-                $this->setProject($Proj);
-
-                $this->prepareGoogleStorageFields();
-                //configure google storage object
-                $this->setClient(new StorageClient(['keyFile' => json_decode($this->getProjectSetting('google-api-token'), true), 'projectId' => $this->getProjectSetting('google-project-id')]));
-
-                if (!empty($this->getInstances())) {
-                    $buckets = array();
-                    $prefix = array();
-                    foreach ($this->getInstances() as $instance) {
-                        $buckets[$instance['google-storage-bucket']] = $this->getClient()->bucket($instance['google-storage-bucket']);
-                        $prefix[$instance['google-storage-bucket']] = $instance['google-storage-bucket-prefix'];
-                    }
-                    $this->setBuckets($buckets);
-                    $this->setBucketPrefix($prefix);
-                }
-
-                // set flag to display uploaded file download links
-                if (!is_null($this->getProjectSetting('disable-file-link'))) {
-                    $this->setLinksDisabled($this->getProjectSetting('disable-file-link'));
-
-                } else {
-                    $this->setLinksDisabled(false);
-                }
-
-                // set if we want auto save when file is uploaded.
-                if (!is_null($this->getProjectSetting('disable-auto-save'))) {
-                    $this->setAutoSaveDisabled($this->getProjectSetting('disable-auto-save'));
-                } else {
-                    $this->setAutoSaveDisabled(false);
-                }
-            }
-        } catch (\Exception $e) {
-            #echo $e->getMessage();
-        }
-    }
 
     /**
      * @param string $path
@@ -156,7 +110,7 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
     public function saveRecord()
     {
         if (isset($_POST['record_id']) && $_POST['record_id'] != '') {
-            $recordId = (filter_var($_POST['record_id'], FILTER_SANITIZE_STRING));
+            $recordId = htmlspecialchars($_POST['record_id']);
         } else {
             $recordId = (\REDCap::reserveNewRecordId($this->getProjectId()));
         }
@@ -252,8 +206,8 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
 
                 // do not set the record for surveys
                 if (isset($_GET['id'])) {
-                    $this->setRecordId(filter_var($_GET['id'], FILTER_SANITIZE_STRING));
-                    $this->setRecord(filter_var($_GET['id'], FILTER_SANITIZE_STRING));
+                    $this->setRecordId(htmlspecialchars($_GET['id']));
+                    $this->setRecord(htmlspecialchars($_GET['id']));
                     $this->prepareDownloadLinks();
                 }
 
@@ -370,6 +324,9 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
      */
     public function getGoogleStorageSignedUploadUrl($bucket, $objectName, $contentType = 'text/plain', $duration = 3600)
     {
+        if(!$bucket){
+            throw new \Exception("Bucket is empty");
+        }
         $url = $bucket->object($objectName)->signedUrl(new \DateTime('+ ' . $duration . ' seconds'),
             [
                 'method' => 'PUT',
@@ -384,6 +341,9 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
      */
     public function getClient()
     {
+        if (!$this->client) {
+            $this->setClient(new StorageClient(['keyFile' => json_decode($this->getProjectSetting('google-api-token'), true), 'projectId' => $this->getProjectSetting('google-project-id')]));
+        }
         return $this->client;
     }
 
@@ -420,14 +380,24 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
      */
     public function getBuckets()
     {
+        if (!$this->buckets) {
+            $this->setBuckets();
+        }
         return $this->buckets;
     }
 
     /**
      * @param Bucket[] $buckets
      */
-    public function setBuckets($buckets)
+    public function setBuckets()
     {
+        $buckets = array();
+        if (!empty($this->getInstances())) {
+
+            foreach ($this->getInstances() as $instance) {
+                $buckets[$instance['google-storage-bucket']] = $this->getClient()->bucket($instance['google-storage-bucket']);
+            }
+        }
         $this->buckets = $buckets;
     }
 
@@ -437,6 +407,9 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
      */
     public function getInstances()
     {
+        if (!$this->instances && isset($_GET['pid']) && $this->getProjectSetting('google-api-token') != '' && $this->getProjectSetting('google-project-id') != '') {
+            $this->setInstances();
+        }
         return $this->instances;
     }
 
@@ -452,6 +425,10 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
      */
     public function getProject()
     {
+        if (!$this->project) {
+            global $Proj;
+            $this->setProject($Proj);
+        }
         return $this->project;
     }
 
@@ -468,6 +445,9 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
      */
     public function getFields()
     {
+        if (!$this->fields) {
+            $this->prepareGoogleStorageFields();
+        }
         return $this->fields;
     }
 
@@ -582,15 +562,25 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
      */
     public function getBucketPrefix(): array
     {
+        if(!$this->bucketPrefix){
+            $this->setBucketPrefix();
+        }
         return $this->bucketPrefix;
     }
 
     /**
      * @param array $bucketPrefix
      */
-    public function setBucketPrefix(array $bucketPrefix): void
+    public function setBucketPrefix(): void
     {
-        $this->bucketPrefix = $bucketPrefix;
+        $prefix = array();
+        if (!empty($this->getInstances())) {
+
+            foreach ($this->getInstances() as $instance) {
+                $prefix[$instance['google-storage-bucket']] = $instance['google-storage-bucket-prefix'];
+            }
+        }
+        $this->bucketPrefix = $prefix;
     }
 
     /**
@@ -614,16 +604,13 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
      */
     public function isLinksDisabled(): bool
     {
-        return $this->linksDisabled;
+        if (!is_null($this->getProjectSetting('disable-file-link'))) {
+            return $this->getProjectSetting('disable-file-link');
+        } else {
+            return false;
+        }
     }
 
-    /**
-     * @param bool $linksDisabled
-     */
-    public function setLinksDisabled($linksDisabled): void
-    {
-        $this->linksDisabled = $linksDisabled;
-    }
 
     /**
      * @return bool
@@ -646,7 +633,11 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
      */
     public function isAutoSaveDisabled(): bool
     {
-        return $this->autoSaveDisabled;
+        if (!is_null($this->getProjectSetting('disable-auto-save'))) {
+            return $this->getProjectSetting('disable-auto-save');
+        } else {
+            return false;
+        }
     }
 
     /**
