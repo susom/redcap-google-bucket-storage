@@ -1,4 +1,5 @@
-Client = {
+var GoogleStorageModule = {};
+GoogleStorageModule.Client = {
     signedURL: '',
     contentType: '',
     getSignedURLAjax: '',
@@ -24,11 +25,11 @@ Client = {
 
             for (key in parsedObj) {
                 if (typeof parsedObj[key] === 'object') {
-                    parsedObj[key] = Client.decode_object(parsedObj[key])
+                    parsedObj[key] = GoogleStorageModule.Client.decode_object(parsedObj[key])
                 } else {
                     // ignore boolean because changing them to string will cause error.
                     if (typeof parsedObj[key] != 'boolean') {
-                        parsedObj[key] = Client.decode_string(parsedObj[key])
+                        parsedObj[key] = GoogleStorageModule.Client.decode_string(parsedObj[key])
                     }
                 }
             }
@@ -48,7 +49,7 @@ Client = {
     init: function () {
 
         // test builder
-        Client.removeAutoParam()
+        GoogleStorageModule.Client.removeAutoParam()
         // with ajax disable all submit buttons till ajax is completed
         jQuery(document).on({
             ajaxStop: function () {
@@ -59,16 +60,16 @@ Client = {
             }
         });
 
-        Client.processFields();
+        GoogleStorageModule.Client.processFields();
         $(".google-storage-field").on('change', function () {
             var files = $(this).prop("files")
             var field = $(this).data('field')
-            Client.form = $(this).parents('form:first');
+            GoogleStorageModule.Client.form = $(this).parents('form:first');
             for (var i = 0; i < files.length; i++) {
-                Client.getSignedURL(files[i].type, files[i].name, field, files[i])
+                GoogleStorageModule.Client.getSignedURL(files[i].type, files[i].name, field, files[i])
             }
 
-            //Client.getSignedURL(file[0].type, file[0].name, field)
+            //GoogleStorageModule.Client.getSignedURL(file[0].type, file[0].name, field)
         });
 
 
@@ -76,7 +77,7 @@ Client = {
             var fieldName = $(this).data('field-name')
             var fileName = $(this).data('file-name')
             var id = $(this).data('file-id')
-            Client.getDownloadSignedURL(fieldName, fileName, id)
+            GoogleStorageModule.Client.getDownloadSignedURL(fieldName, fileName, id)
         })
     },
     // we want to remove this param so after on save record in saves to correct record id.
@@ -90,21 +91,21 @@ Client = {
     saveRecord: function (path) {
         $.ajax({
             // Your server script to process the upload
-            url: Client.saveRecordURLAjax,
+            url: GoogleStorageModule.Client.saveRecordURLAjax,
             type: 'POST',
 
             // Form data
             data: {
-                'record_id': Client.recordId,
-                'event_id': Client.eventId,
-                'instance_id': Client.instanceId,
-                'files_path': JSON.stringify(Client.filesPath)
+                'record_id': GoogleStorageModule.Client.recordId,
+                'event_id': GoogleStorageModule.Client.eventId,
+                'instance_id': GoogleStorageModule.Client.instanceId,
+                'files_path': JSON.stringify(GoogleStorageModule.Client.filesPath)
             },
             success: function (temp) {
-                var response = Client.decode_object(temp)
+                var response = GoogleStorageModule.Client.decode_object(temp)
                 if (response.status === 'success') {
-                    Client.downloadLinks = response.links
-                    Client.processFields(path);
+                    GoogleStorageModule.Client.downloadLinks = response.links
+                    GoogleStorageModule.Client.processFields(path);
 
                     // change few parameter to let redcap save existing record
                     record_exists = 1;
@@ -121,9 +122,9 @@ Client = {
         });
     },
     processFields: function (path) {
-        for (var prop in Client.fields) {
+        for (var prop in GoogleStorageModule.Client.fields) {
             $elem = jQuery("input[name=" + prop + "]").attr('type', 'hidden');
-            var files = Client.downloadLinks[prop];
+            var files = GoogleStorageModule.Client.downloadLinks[prop];
 
             if ($elem.val() !== '' || (files != undefined)) {
 
@@ -132,14 +133,14 @@ Client = {
                     for (var file in files) {
                         // if download links are disable
                         // if (files[file] != '') {
-                        //     $links.append('<div id="' + Client.convertPathToASCII(file) + '"><a class="google-storage-link" target="_blank" href="' + files[file] + '">' + file + '</a><br></div>')
+                        //     $links.append('<div id="' + GoogleStorageModule.Client.convertPathToASCII(file) + '"><a class="google-storage-link" target="_blank" href="' + files[file] + '">' + file + '</a><br></div>')
                         // } else {
-                        //     $links.append('<div id="' + Client.convertPathToASCII(file) + '"><div class="file-name" data-file-id="' + Client.convertPathToASCII(file) + '">' + file + '</div> <a  data-field-name="' + prop + '" data-file-id="' + Client.convertPathToASCII(file) + '" data-file-name="' + file + '" class="get-download-link btn btn-primary btn-sm" href="#">Get Download Link</a><br></div>')
+                        //     $links.append('<div id="' + GoogleStorageModule.Client.convertPathToASCII(file) + '"><div class="file-name" data-file-id="' + GoogleStorageModule.Client.convertPathToASCII(file) + '">' + file + '</div> <a  data-field-name="' + prop + '" data-file-id="' + GoogleStorageModule.Client.convertPathToASCII(file) + '" data-file-name="' + file + '" class="get-download-link btn btn-primary btn-sm" href="#">Get Download Link</a><br></div>')
                         // }
-                        if (Client.isLinkDisabled) {
-                            $links.append('<div id="' + Client.convertPathToASCII(file) + '"><div class="file-name" data-file-id="' + Client.convertPathToASCII(file) + '">' + file + '</div></div>')
+                        if (GoogleStorageModule.Client.isLinkDisabled) {
+                            $links.append('<div id="' + GoogleStorageModule.Client.convertPathToASCII(file) + '"><div class="file-name" data-file-id="' + GoogleStorageModule.Client.convertPathToASCII(file) + '">' + file + '</div></div>')
                         } else {
-                            $links.append('<div id="' + Client.convertPathToASCII(file) + '"><div class="file-name" data-file-id="' + Client.convertPathToASCII(file) + '">' + file + '</div> <a  data-field-name="' + prop + '" data-file-id="' + Client.convertPathToASCII(file) + '" data-file-name="' + file + '" class="get-download-link btn btn-primary btn-sm" href="#">Get Download Link</a><br></div>')
+                            $links.append('<div id="' + GoogleStorageModule.Client.convertPathToASCII(file) + '"><div class="file-name" data-file-id="' + GoogleStorageModule.Client.convertPathToASCII(file) + '">' + file + '</div> <a  data-field-name="' + prop + '" data-file-id="' + GoogleStorageModule.Client.convertPathToASCII(file) + '" data-file-name="' + file + '" class="get-download-link btn btn-primary btn-sm" href="#">Get Download Link</a><br></div>')
                         }
 
                     }
@@ -148,12 +149,12 @@ Client = {
                 } else {
                     // if download links are disable
                     if ((files !== undefined && files[path] != '')) {
-                        $("#" + Client.convertPathToASCII(path)).html('<a class="google-storage-link" target="_blank" href="' + files[path] + '">' + path + '</a><br>')
+                        $("#" + GoogleStorageModule.Client.convertPathToASCII(path)).html('<a class="google-storage-link" target="_blank" href="' + files[path] + '">' + path + '</a><br>')
                     } else {
-                        if (Client.isLinkDisabled) {
-                            $("#" + Client.convertPathToASCII(path)).html('<div class="file-name" data-file-id="' + Client.convertPathToASCII(path) + '">' + path + '</div><br>')
+                        if (GoogleStorageModule.Client.isLinkDisabled) {
+                            $("#" + GoogleStorageModule.Client.convertPathToASCII(path)).html('<div class="file-name" data-file-id="' + GoogleStorageModule.Client.convertPathToASCII(path) + '">' + path + '</div><br>')
                         } else {
-                            $("#" + Client.convertPathToASCII(path)).html('<div class="file-name" data-file-id="' + Client.convertPathToASCII(path) + '">' + path + '</div><a  data-field-name="' + prop + '" data-file-id="' + Client.convertPathToASCII(path) + '" data-file-name="' + path + '" class="get-download-link btn btn-primary btn-sm" href="#">Get Download Link</a><br>')
+                            $("#" + GoogleStorageModule.Client.convertPathToASCII(path)).html('<div class="file-name" data-file-id="' + GoogleStorageModule.Client.convertPathToASCII(path) + '">' + path + '</div><a  data-field-name="' + prop + '" data-file-id="' + GoogleStorageModule.Client.convertPathToASCII(path) + '" data-file-name="' + path + '" class="get-download-link btn btn-primary btn-sm" href="#">Get Download Link</a><br>')
                         }
                     }
                 }
@@ -164,7 +165,7 @@ Client = {
             }
 
             if (path !== undefined) {
-                Client.uploadDialog(path)
+                GoogleStorageModule.Client.uploadDialog(path)
             }
         }
     },
@@ -185,7 +186,7 @@ Client = {
     getDownloadSignedURL: function (field_name, file_name, id) {
         $.ajax({
             // Your server script to process the upload
-            url: Client.getSignedURLAjax,
+            url: GoogleStorageModule.Client.getSignedURLAjax,
             type: 'GET',
 
             // Form data
@@ -195,7 +196,7 @@ Client = {
                 'action': 'download'
             },
             success: function (temp) {
-                var response = Client.decode_object(temp)
+                var response = GoogleStorageModule.Client.decode_object(temp)
                 if (response.status === 'success') {
                     $("#" + id).html('<a target="_blank" href="' + response.link + '">' + file_name + '</a>')
                 }
@@ -208,7 +209,7 @@ Client = {
     getSignedURL: function (type, name, field, file) {
         $.ajax({
             // Your server script to process the upload
-            url: Client.getSignedURLAjax,
+            url: GoogleStorageModule.Client.getSignedURLAjax,
             type: 'GET',
 
             // Form data
@@ -216,15 +217,15 @@ Client = {
                 'content_type': type,
                 'file_name': name,
                 'field_name': field,
-                'record_id': Client.recordId,
-                'event_id': Client.eventId,
-                'instance_id': Client.instanceId,
+                'record_id': GoogleStorageModule.Client.recordId,
+                'event_id': GoogleStorageModule.Client.eventId,
+                'instance_id': GoogleStorageModule.Client.instanceId,
                 'action': 'upload'
             },
             success: function (temp) {
-                var response = Client.decode_object(temp)
+                var response = GoogleStorageModule.Client.decode_object(temp)
                 if (response.status === 'success') {
-                    Client.uploadFile(response.url, type, file, response.path, field)
+                    GoogleStorageModule.Client.uploadFile(response.url, type, file, response.path, field)
                 }
             },
             error: function (request, error) {
@@ -259,32 +260,32 @@ Client = {
             },
 
             beforeSend: function () {
-                if ($('#' + Client.convertPathToASCII(path)).length) {
-                    $('#' + Client.convertPathToASCII(path)).html('<progress data-name="' + file.name + '"></progress>' + file.name + '<span data-name="' + file.name + '"> <i class="fas fa-window-close"></i></span><br></div>')
+                if ($('#' + GoogleStorageModule.Client.convertPathToASCII(path)).length) {
+                    $('#' + GoogleStorageModule.Client.convertPathToASCII(path)).html('<progress data-name="' + file.name + '"></progress>' + file.name + '<span data-name="' + file.name + '"> <i class="fas fa-window-close"></i></span><br></div>')
                 } else {
-                    $('<div id="' + Client.convertPathToASCII(path) + '"><progress data-name="' + file.name + '"></progress>' + file.name + '<span data-name="' + file.name + '"> <i class="fas fa-window-close"></i></span><br></div>').insertAfter(Client.form);
+                    $('<div id="' + GoogleStorageModule.Client.convertPathToASCII(path) + '"><progress data-name="' + file.name + '"></progress>' + file.name + '<span data-name="' + file.name + '"> <i class="fas fa-window-close"></i></span><br></div>').insertAfter(GoogleStorageModule.Client.form);
                 }
             },
             complete: function (xhr, status) {
                 if (status == 'success') {
-                    if (Client.filesPath[field] === undefined || Client.filesPath[field] === '') {
-                        Client.filesPath = {
+                    if (GoogleStorageModule.Client.filesPath[field] === undefined || GoogleStorageModule.Client.filesPath[field] === '') {
+                        GoogleStorageModule.Client.filesPath = {
                             [field]: path
                         }
                     } else {
                         // only attach if file is new file
-                        if (Client.filesPath[field].indexOf(path) !== false) {
-                            Client.filesPath[field] += ',' + path
+                        if (GoogleStorageModule.Client.filesPath[field].indexOf(path) !== false) {
+                            GoogleStorageModule.Client.filesPath[field] += ',' + path
                         }
                     }
                     // make sure to set the value in case user clicked default save button .
-                    jQuery("input[name=" + field + "]").val(Client.filesPath[field]);
+                    jQuery("input[name=" + field + "]").val(GoogleStorageModule.Client.filesPath[field]);
 
                     // do not save for surveys
-                    if (Client.isAutoSaveDisabled == false) {
-                        Client.saveRecord(path);
+                    if (GoogleStorageModule.Client.isAutoSaveDisabled == false) {
+                        GoogleStorageModule.Client.saveRecord(path);
                     } else {
-                        Client.processFields(path);
+                        GoogleStorageModule.Client.processFields(path);
                     }
 
                 }
@@ -314,7 +315,7 @@ Client = {
                 _cancel.on('click', function () {
                     if (confirm('Are you sure you want to cancel upload for ' + file.name + '?')) {
                         myXhr.abort();
-                        $('#' + Client.convertPathToASCII(path)).html('')
+                        $('#' + GoogleStorageModule.Client.convertPathToASCII(path)).html('')
                     }
                 })
 
