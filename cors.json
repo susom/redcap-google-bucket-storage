@@ -1,7 +1,7 @@
 [
   {
     "origin": [
-      "*"
+      "https://redcap.stanford.edu"
     ],
     "responseHeader": [
       "Content-Type",

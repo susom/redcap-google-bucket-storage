@@ -22,7 +22,7 @@ happening directly from user client to bucket with no REDCap as middleware.
  - Use `gutil` to update the settings - to do this, you need to have the [Google Cloud CLI](https://cloud.google.com/storage/docs/gsutil_install) installed.  
  - First, view your bucket's CORS settings.  They should be null:
  ```
- gcloud storage buckets describe gs://hne-collaborator-redcap-uploads-pid28042 --format="default(cors)"
+ gcloud storage buckets describe gs://hne-collaborator-redcap-uploads-pid28042 --format="default(cors_config)"
  ```
  - Second, create a `.json` file that will store the cors settings you want to set.  Here is an example file - you will need to update the `origin` array to be the url(s) for your REDCap.  If you use a survey proxy where your external URL is different than your internal URL, you can list multiple values in the array.  Save the file, e.g. something like `my_bucket_cors.json`:
  ```
