@@ -23,6 +23,7 @@ $this->emLog('inside src/client.php');
     GoogleStorageModule.Client.isSurvey = "<?php echo $this->isSurvey() ? true : false ?>"
     GoogleStorageModule.Client.isAutoSaveDisabled = "<?php echo $this->isAutoSaveDisabled() ? true : false ?>"
     GoogleStorageModule.Client.isLinkDisabled = "<?php echo $this->isLinksDisabled() ?>"
+    GoogleStorageModule.Client.csrfToken = "<?php echo \System::getCsrfToken() ?>"
     window.addEventListener("load",
         function () {
             setTimeout(function () {

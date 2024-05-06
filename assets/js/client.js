@@ -14,6 +14,7 @@ GoogleStorageModule.Client = {
     isSurvey: false,
     isLinkDisabled: false,
     isAutoSaveDisabled: false,
+    csrfToken: '',
     decode_object: function (obj) {
         try {
             // parse text to json object
@@ -99,7 +100,8 @@ GoogleStorageModule.Client = {
                 'record_id': GoogleStorageModule.Client.recordId,
                 'event_id': GoogleStorageModule.Client.eventId,
                 'instance_id': GoogleStorageModule.Client.instanceId,
-                'files_path': JSON.stringify(GoogleStorageModule.Client.filesPath)
+                'files_path': JSON.stringify(GoogleStorageModule.Client.filesPath),
+                'redcap_csrf_token': GoogleStorageModule.Client.csrfToken
             },
             success: function (temp) {
                 var response = GoogleStorageModule.Client.decode_object(temp)
