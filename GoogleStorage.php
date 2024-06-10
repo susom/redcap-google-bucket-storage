@@ -215,7 +215,8 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
                 $this->includeFile("src/client.php");
             }
         } catch (\Exception $e) {
-            echo $e->getMessage();
+            $this->emError($e->getTrace());
+            $this->emError($e->getMessage());
         }
 
     }
