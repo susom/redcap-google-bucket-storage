@@ -11,6 +11,7 @@ use Google\Cloud\Storage\Bucket;
 use function Amp\Iterator\filter;
 
 # test commit
+
 /**
  * Class GoogleStorage
  * @package Stanford\GoogleStorage
@@ -205,13 +206,20 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
                     $this->setInstanceId(filter_var($_GET['instance'], FILTER_SANITIZE_NUMBER_INT));
                 }
 
+                $code = \REDCap::getSurveyReturnCode();
                 // do not set the record for surveys
                 if (isset($_GET['id']) and !isset($_GET['s'])) {
                     $this->setRecordId(htmlspecialchars($_GET['id']));
                     $this->setRecord(htmlspecialchars($_GET['id']));
                     $this->prepareDownloadLinks();
-                }elseif(isset($_GET['s'])){
-                    $this->setRecordId(\REDCap::reserveNewRecordId($this->getProjectId()));
+                } elseif (isset($_GET['s'])) {
+                    // survey page check if public survey or record specific
+                    $publicHash = $this->getPublicSurveyHash($this->getProjectId());
+                    if ($publicHash != $_GET['s']) {
+                        $this->setRecordId($_GET['id']);
+                    } else {
+                        $this->setRecordId(\REDCap::reserveNewRecordId($this->getProjectId()));
+                    }
                 }
 
 
@@ -328,7 +336,7 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
      */
     public function getGoogleStorageSignedUploadUrl($bucket, $objectName, $contentType = 'text/plain', $duration = 3600)
     {
-        if(!$bucket){
+        if (!$bucket) {
             throw new \Exception("Bucket is empty");
         }
         $url = $bucket->object($objectName)->signedUrl(new \DateTime('+ ' . $duration . ' seconds'),
@@ -566,7 +574,7 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
      */
     public function getBucketPrefix(): array
     {
-        if(!$this->bucketPrefix){
+        if (!$this->bucketPrefix) {
             $this->setBucketPrefix();
         }
         return $this->bucketPrefix;
