@@ -93,7 +93,7 @@ GoogleStorageModule.Client = {
         $.ajax({
             // Your server script to process the upload
             url: GoogleStorageModule.Client.saveRecordURLAjax,
-            type: 'POST',
+            type: 'GET',
 
             // Form data
             data: {

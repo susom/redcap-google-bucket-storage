@@ -110,21 +110,21 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
 
     public function saveRecord()
     {
-        if (isset($_POST['record_id']) && $_POST['record_id'] != '') {
-            $recordId = htmlspecialchars($_POST['record_id']);
+        if (isset($_GET['record_id']) && $_GET['record_id'] != '') {
+            $recordId = htmlspecialchars($_GET['record_id']);
         } else {
             $recordId = (\REDCap::reserveNewRecordId($this->getProjectId()));
         }
         $data[\REDCap::getRecordIdField()] = $recordId;
-        $filesPath = json_decode($_POST['files_path'], true);
+        $filesPath = json_decode($_GET['files_path'], true);
         foreach ($filesPath as $field => $item) {
             $data[$field] = $item;
             $form = $this->getFieldInstrument($field);
         }
-        $this->setEventId(filter_var($_POST['event_id'], FILTER_SANITIZE_NUMBER_INT));
+        $this->setEventId(filter_var($_GET['event_id'], FILTER_SANITIZE_NUMBER_INT));
         $data['redcap_event_name'] = $this->getProject()->getUniqueEventNames($this->getEventId());
         if ($this->getProject()->isRepeatingForm($this->getEventId(), $form)) {
-            $data['redcap_repeat_instance'] = filter_var($_POST['instance_id'], FILTER_SANITIZE_NUMBER_INT);
+            $data['redcap_repeat_instance'] = filter_var($_GET['instance_id'], FILTER_SANITIZE_NUMBER_INT);
             $data['redcap_repeat_instrument'] = $form;
         }
 
