@@ -206,10 +206,12 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
                 }
 
                 // do not set the record for surveys
-                if (isset($_GET['id'])) {
+                if (isset($_GET['id']) and !isset($_GET['s'])) {
                     $this->setRecordId(htmlspecialchars($_GET['id']));
                     $this->setRecord(htmlspecialchars($_GET['id']));
                     $this->prepareDownloadLinks();
+                }elseif(isset($_GET['s'])){
+                    $this->setRecordId(\REDCap::reserveNewRecordId($this->getProjectId()));
                 }
 
 
