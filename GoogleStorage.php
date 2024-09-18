@@ -269,9 +269,13 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
             }
             if ($temp != '') {
                 $filesREDCap = explode(",", $temp);
+
+                $this->emDebug("");
                 $bucket = $this->getBucket($field);
 
-                if (!empty($field)) {
+                $this->emDebug("Field Name: $field");
+
+                if (!is_null($bucket) AND !empty($field)) {
                     // check if files still exist in bucket.
                     $prefix = $this->getFullPrefix($filesREDCap[0]);
                     $GCPFiles = $this->getPrefixObjects($bucket, $prefix);
@@ -290,6 +294,8 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
                             $filesPath[$field] = $file;
                         }
                     }
+                }elseif(is_null($bucket)){
+                    $this->emDebug("Bucket is null for $field");
                 }
             }
         }
