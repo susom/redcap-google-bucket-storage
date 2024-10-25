@@ -217,7 +217,7 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
                     $publicHash = $this->getPublicSurveyHash($this->getProjectId());
                     if ($publicHash != $_GET['s']) {
                         $this->setRecordId($_GET['id']);
-                    } else {
+                    } elseif(!$this->isAutoSaveDisabled()) {
                         $this->setRecordId(\REDCap::reserveNewRecordId($this->getProjectId()));
                     }
                 }
