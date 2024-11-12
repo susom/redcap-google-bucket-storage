@@ -56,7 +56,7 @@ try {
 
         $.ajax({
             // Your server script to process the upload
-            url: "<?php echo $module->getUrl('ajax/get_signed_url.php', false, true) ?>",
+            url: "<?php echo $module->getUrl('ajax/get_signed_url.php', true, true) ?>",
             type: 'GET',
 
             // Form data

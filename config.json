@@ -21,7 +21,9 @@
     "project": []
   },
   "no-auth-pages": [
-    "src/test"
+    "src/test",
+    "ajax/get_signed_url",
+    "ajax/save_record"
   ],
   "system-settings": [
     {

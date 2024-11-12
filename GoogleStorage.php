@@ -133,7 +133,7 @@ class GoogleStorage extends \ExternalModules\AbstractExternalModule
         if (empty($response['errors'])) {
             $this->setRecord($recordId);
             $this->prepareDownloadLinks();
-            $this->uploadLogFile(USERID, $this->getRecordId(), $data['redcap_event_name'], $field, $filesPath);
+            $this->uploadLogFile((defined('USERID')?USERID:'[survey-respondent]'), $this->getRecordId(), $data['redcap_event_name'], $field, $filesPath);
             return array('status' => 'success', 'links' => $this->getDownloadLinks());
         } else {
             if (is_array($response['errors'])) {

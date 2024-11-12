@@ -15,7 +15,7 @@ try {
         $prefix = $module->getFieldBucketPrefix($fieldName);
         $path = $module->buildUploadPath($prefix, $fieldName, $fileName, $recordId, $eventId, $instanceId);
         $response = $module->getGoogleStorageSignedUploadUrl($bucket, $path, $contentType);
-        \REDCap::logEvent(USERID . " generated Upload signed URL for $fileName ", '', null, null);
+        \REDCap::logEvent((defined('USERID')?USERID:'[survey-respondent]') . " generated Upload signed URL for $fileName ", '', null, null);
         $result = json_encode(array('status' => 'success', 'url' => $response, 'path' => $path), JSON_THROW_ON_ERROR);
         echo htmlentities($result, ENT_QUOTES);;
     } elseif (isset($_GET['action']) && $_GET['action'] == 'download') {
@@ -23,7 +23,7 @@ try {
         $fieldName = htmlspecialchars($_GET['field_name']);
         $bucket = $module->getBucket($fieldName);
         $link = $module->getGoogleStorageSignedUrl($bucket, trim($fileName));
-        \REDCap::logEvent(USERID . " generated Download signed URL for $fileName ", '', null, null);
+        \REDCap::logEvent((defined('USERID')?USERID:'[survey-respondent]') . " generated Download signed URL for $fileName ", '', null, null);
 
         $result = json_encode(array('status' => 'success', 'link' => $link), JSON_THROW_ON_ERROR);
         echo htmlentities($result, ENT_QUOTES);;

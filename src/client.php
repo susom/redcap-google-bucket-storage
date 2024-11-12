@@ -15,8 +15,8 @@ $this->emLog('inside src/client.php');
     GoogleStorageModule.Client.fields = <?php echo json_encode($this->getFields()); ?>;
     GoogleStorageModule.Client.downloadLinks = <?php echo !is_null($this->getDownloadLinks()) ? json_encode($this->getDownloadLinks()) : []; ?>;
     GoogleStorageModule.Client.filesPath = <?php echo !is_null($this->getFilesPath()) ? json_encode($this->getFilesPath()) : []; ?>;
-    GoogleStorageModule.Client.getSignedURLAjax = "<?php echo $this->getUrl('ajax/get_signed_url.php', false, true) . '&pid=' . $this->getProjectId() ?>"
-    GoogleStorageModule.Client.saveRecordURLAjax = "<?php echo $this->getUrl('ajax/save_record.php', false, true) . '&pid=' . $this->getProjectId() ?>"
+    GoogleStorageModule.Client.getSignedURLAjax = "<?php echo $this->getUrl('ajax/get_signed_url.php', true, true) . '&pid=' . $this->getProjectId() ?>"
+    GoogleStorageModule.Client.saveRecordURLAjax = "<?php echo $this->getUrl('ajax/save_record.php', true, true) . '&pid=' . $this->getProjectId() ?>"
     GoogleStorageModule.Client.recordId = "<?php echo $this->getRecordId() ?: '' ?>"
     GoogleStorageModule.Client.eventId = "<?php echo $this->getEventId() ?>"
     GoogleStorageModule.Client.instanceId = "<?php echo $this->getInstanceId() ?>"
